@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "blockmeter",
+  "version": "${version}",
+  "environment": "client",    
+  "entrypoints": {
+    "client": [ "win.baruna.blockmeter.BlockMeter" ]
+  },
+  "custom": {
+      "modmenu:clientsideOnly": true
+  },
+  "mixins": [
+    "blockmeter.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*"
+  },
+  
+  "name": "Block Meter",
+  "description": "A simple mod to measure your blocks!",
+  "icon": "assets/blockmeter/icon.png",
+  "authors": [ "MadeOke", "Giselbaer" ],
+
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeter"
+  },
+
+  "license": "MIT"
+}

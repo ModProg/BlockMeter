@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "win.baruna.blockmeter.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [],
+  "client": [
+    "GameRendererMixin",
+    "GameMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "blockmeter-refmap.json"
+}

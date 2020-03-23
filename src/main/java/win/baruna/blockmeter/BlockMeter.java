@@ -1,14 +1,13 @@
 package win.baruna.blockmeter;  
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.client.ClientTickCallback;
-import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
-import net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry;
 import java.util.ArrayList;
-import win.baruna.blockmeter.gui.OptionsGui;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
+import net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry;
+import net.fabricmc.fabric.api.event.client.ClientTickCallback;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Camera;
@@ -24,6 +23,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
+import win.baruna.blockmeter.gui.OptionsGui;
 
 public class BlockMeter implements ClientModInitializer
 {
@@ -61,19 +61,28 @@ public class BlockMeter implements ClientModInitializer
         ClientTickCallback.EVENT.register(e -> {
 
             if (keyBinding.wasPressed()) {
-                this.active = !this.active;
-                final ItemStack itemStack = e.player.getMainHandStack();
-                this.currentItem = itemStack.getItem();
                 if (this.active) {
-                    e.player.addChatMessage(new TranslatableText("blockmeter.toggle.on", new Object[] { new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }), true);
+                    if (Screen.hasShiftDown()) {
+                        if (this.boxes.size() > 0) {
+                            this.boxes.remove(this.boxes.size()-1);
+                        }
+                        e.player.addChatMessage(new TranslatableText("blockmeter.clearlast"), true);
+                    } else {
+                        this.active = false;
+                        e.player.addChatMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
+                        this.boxes.clear();
+                    }
                 } else {
-                    e.player.addChatMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                    this.boxes.clear();
+                    active = true;
+                    ItemStack itemStack = e.player.getMainHandStack();
+                    currentItem = itemStack.getItem();
+                    e.player.addChatMessage(new TranslatableText("blockmeter.toggle.on", new Object[] { new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }), true);
                 }              
             }
 
             if (keyBindingMenu.wasPressed()
-            && MinecraftClient.getInstance().player.getMainHandStack().getItem().equals(this.currentItem)) {
+            &&  active
+            &&  MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
                 MinecraftClient.getInstance().openScreen((Screen)this.menu);
             }
 

@@ -1,18 +1,19 @@
 //   // Decompiled by Procyon v0.5.30
 // 
 package win.baruna.blockmeter;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.Rotation3;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -185,12 +186,22 @@ public class MeasureBox
         final float size = 0.03f;
 
         RenderSystem.pushMatrix();
-        RenderSystem.translated(x, y + 0.14999999664723873, z);
+        RenderSystem.translated(x, y + 0.15, z);
         RenderSystem.rotatef((float)(180.0f - yaw), 0.0f, 1.0f, 0.0f);
         RenderSystem.rotatef((float)(-pitch), 1.0f, 0.0f, 0.0f);
-        RenderSystem.scaled(0.029999999329447746, -0.029999999329447746, 0.001);
+        RenderSystem.scaled(0.03, -0.03, 0.001);
         RenderSystem.translated((double)(-textRenderer.getStringWidth(lengthString) / 2), 0.0, 0.0);
-        textRenderer.drawWithShadow(lengthString, 0.0f, 0.0f, this.color.getSignColor());
+        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+        textRenderer.draw(lengthString, 0.0f, 0.0f, 
+                this.color.getSignColor(),
+                false,                              // shadow
+                Rotation3.identity().getMatrix(),   // matrix
+                immediate,                          // draw buffer
+                true,                               // seeThrough
+                0,                                  // backgroundColor => underlineColor,
+                0x0                          // light
+        );
+        immediate.draw();
         RenderSystem.popMatrix();
     }
     

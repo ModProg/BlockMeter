@@ -66,17 +66,17 @@ public class BlockMeter implements ClientModInitializer
                         if (this.boxes.size() > 0) {
                             this.boxes.remove(this.boxes.size()-1);
                         }
-                        e.player.addChatMessage(new TranslatableText("blockmeter.clearlast"), true);
+                        e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
                     } else {
                         this.active = false;
-                        e.player.addChatMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
+                        e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
                         this.boxes.clear();
                     }
                 } else {
                     active = true;
                     ItemStack itemStack = e.player.getMainHandStack();
                     currentItem = itemStack.getItem();
-                    e.player.addChatMessage(new TranslatableText("blockmeter.toggle.on", new Object[] { new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }), true);
+                    e.player.sendMessage(new TranslatableText("blockmeter.toggle.on", new Object[] { new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }), true);
                 }              
             }
 

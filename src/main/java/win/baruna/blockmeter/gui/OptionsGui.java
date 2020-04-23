@@ -10,12 +10,17 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.NarratorManager;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.MeasureBox;
 public class OptionsGui extends Screen
 {
+    private static final LiteralText empty = new LiteralText("");
+
     public OptionsGui() {
         super(NarratorManager.EMPTY);
     }
@@ -24,18 +29,18 @@ public class OptionsGui extends Screen
     protected void init() {
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
-                this.addButton((AbstractButtonWidget)new Button(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
+                this.addButton((AbstractButtonWidget)new Button(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, empty, i * 4 + j));
 
             }
 
         }
         this.addButton((AbstractButtonWidget)new ButtonWidget(this.width / 2 - 90, this.height / 2 + 10, 180, 20, 
-            I18n.translate("blockmeter.keepcolor", new Object[] { MeasureBox.incrementColor ? "NO" : "YES" }), button -> {
+            new TranslatableText("blockmeter.keepcolor", new Object[] { MeasureBox.incrementColor ? "NO" : "YES" }), button -> {
                 MeasureBox.incrementColor = !MeasureBox.incrementColor;
                 this.init();
         }));
         this.addButton((AbstractButtonWidget)new ButtonWidget(this.width / 2 - 90, this.height / 2 + 32, 180, 20, 
-            I18n.translate("blockmeter.diagonal", new Object[] { MeasureBox.innerDiagonal ? "Disable" : "Enable" }), button -> {
+            new TranslatableText("blockmeter.diagonal", new Object[] { MeasureBox.innerDiagonal ? "Disable" : "Enable" }), button -> {
                 MeasureBox.innerDiagonal = !MeasureBox.innerDiagonal;
                 MinecraftClient.getInstance().openScreen((Screen)null);
         }));
@@ -45,9 +50,9 @@ public class OptionsGui extends Screen
     
 
     @Override
-    public void render(final int int_1, final int int_2, final float float_1) {
-        super.renderBackground();
-        super.render(int_1, int_2, float_1);
+    public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
+        super.renderBackground(stack);
+        super.render(stack, int_1, int_2, float_1);
     }
     
     @Override
@@ -63,7 +68,7 @@ public class OptionsGui extends Screen
         int width;
         int height;
         boolean selected;
-        Button(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
+        Button(final int x, final int y, final int width, final int height, final Text string, final int colorIndex) {
             super(x, y, width, height, string, button -> {
                 MeasureBox.colorIndex = colorIndex;
                 MinecraftClient.getInstance().openScreen((Screen)null);
@@ -79,8 +84,10 @@ public class OptionsGui extends Screen
                 this.selected = true;
             }
         }
-        public void render(final int int_1, final int int_2, final float float_1) {
-            super.render(int_1, int_2, float_1);
+        
+        @Override
+        public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
+            super.render(stack, int_1, int_2, float_1);
 
             GlStateManager.disableTexture();
             final Tessellator tessellator = Tessellator.getInstance();

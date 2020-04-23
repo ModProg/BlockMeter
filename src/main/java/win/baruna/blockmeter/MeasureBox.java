@@ -13,7 +13,8 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.Rotation3;
+import net.minecraft.client.util.math.AffineTransformation;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -192,10 +193,10 @@ public class MeasureBox
         RenderSystem.scaled(0.03, -0.03, 0.001);
         RenderSystem.translated((double)(-textRenderer.getStringWidth(lengthString) / 2), 0.0, 0.0);
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-        textRenderer.draw(lengthString, 0.0f, 0.0f, 
+        textRenderer.draw(new LiteralText(lengthString), 0.0f, 0.0f, 
                 this.color.getSignColor(),
                 false,                              // shadow
-                Rotation3.identity().getMatrix(),   // matrix
+                AffineTransformation.identity().getMatrix(),   // matrix
                 immediate,                          // draw buffer
                 true,                               // seeThrough
                 0,                                  // backgroundColor => underlineColor,

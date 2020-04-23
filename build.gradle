@@ -21,7 +21,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 ext.Versions = new Properties()
-Versions.load(file("../mcversion-1.15.properties").newReader())
+Versions.load(file("Versionfiles/mcversion-1.15.properties").newReader())
 
 archivesBaseName = "BlockMeter"
 ext.projectVersion = "1.3"

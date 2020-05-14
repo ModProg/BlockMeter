@@ -2,12 +2,13 @@
   "schemaVersion": 1,
   "id": "blockmeter",
   "version": "${version}",
-  "environment": "client",    
+  "environment": "*",    
   "entrypoints": {
-    "client": [ "win.baruna.blockmeter.BlockMeter" ]
+    "client": [ "win.baruna.blockmeter.BlockMeterClient" ],
+    "main": [ "win.baruna.blockmeter.BlockMeterServer" ]
   },
   "custom": {
-      "modmenu:clientsideOnly": true
+      "xxxmodmenu:clientsideOnly": true
   },
   "mixins": [
     "blockmeter.mixins.json"

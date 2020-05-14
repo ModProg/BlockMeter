@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import win.baruna.blockmeter.BlockMeter;
+import win.baruna.blockmeter.BlockMeterClient;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin
@@ -23,6 +23,6 @@ public class GameRendererMixin
     )
 
     private void onRenderCenterLast(float partialTicks, final long nanoTime, MatrixStack stack, CallbackInfo info) {
-        BlockMeter.instance.renderOverlay(partialTicks, stack);
+        BlockMeterClient.instance.renderOverlay(partialTicks, stack);
     }
 }

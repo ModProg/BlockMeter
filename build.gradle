@@ -12,6 +12,11 @@ repositories {
     maven {
         url = "file:///tmp/mymavenrepo/"
     }
+    
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    
     maven {
 		url = "https://jitpack.io"
 	}
@@ -24,7 +29,7 @@ ext.Versions = new Properties()
 Versions.load(file("Versionfiles/mcversion-1.15.properties").newReader())
 
 archivesBaseName = "BlockMeter"
-ext.projectVersion = "1.4"
+ext.projectVersion = "1.4.1"
 
 version = "${Versions['minecraft_version']}-fabric${Versions['fabric_versiononly']}-${project.projectVersion}"
 
@@ -45,6 +50,9 @@ processResources {
 }
 
 dependencies {
+    
+    modCompile 'org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT'
+
     minecraft  "com.mojang:minecraft:${Versions['minecraft_version']}"
     mappings   "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
     modCompile "net.fabricmc:fabric-loader:${Versions['loader_version']}"

@@ -13,10 +13,10 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
-import win.baruna.blockmeter.MeasureBox;
+import win.baruna.blockmeter.BlockMeterClient;
+import win.baruna.blockmeter.ClientMeasureBox;
 public class OptionsGui extends Screen
 {
     private static final LiteralText empty = new LiteralText("");
@@ -29,25 +29,25 @@ public class OptionsGui extends Screen
     protected void init() {
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
-                this.addButton((AbstractButtonWidget)new Button(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, empty, i * 4 + j));
-
+                this.addButton((AbstractButtonWidget)new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
             }
-
         }
         this.addButton((AbstractButtonWidget)new ButtonWidget(this.width / 2 - 90, this.height / 2 + 10, 180, 20, 
-            new TranslatableText("blockmeter.keepcolor", new Object[] { MeasureBox.incrementColor ? "NO" : "YES" }), button -> {
-                MeasureBox.incrementColor = !MeasureBox.incrementColor;
+            new TranslatableText("blockmeter.keepcolor", new Object[] { ClientMeasureBox.incrementColor ? "NO" : "YES" }), button -> {
+                ClientMeasureBox.incrementColor = !ClientMeasureBox.incrementColor;
                 this.init();
         }));
         this.addButton((AbstractButtonWidget)new ButtonWidget(this.width / 2 - 90, this.height / 2 + 32, 180, 20, 
-            new TranslatableText("blockmeter.diagonal", new Object[] { MeasureBox.innerDiagonal ? "Disable" : "Enable" }), button -> {
-                MeasureBox.innerDiagonal = !MeasureBox.innerDiagonal;
+            new TranslatableText("blockmeter.diagonal", new Object[] { ClientMeasureBox.innerDiagonal ? "Disable" : "Enable" }), button -> {
+                ClientMeasureBox.innerDiagonal = !ClientMeasureBox.innerDiagonal;
                 MinecraftClient.getInstance().openScreen((Screen)null);
         }));
-
+        this.addButton((AbstractButtonWidget)new ButtonWidget(this.width / 2 - 90, this.height / 2 + 54, 180, 20, 
+            new TranslatableText("blockmeter.showothers", new Object[] { BlockMeterClient.getShowOtherUsers() ? "NO" : "YES" }), button -> {
+                BlockMeterClient.setShowOtherUsers(!BlockMeterClient.getShowOtherUsers());
+                MinecraftClient.getInstance().openScreen((Screen)null);
+        }));
     }
-
-    
 
     @Override
     public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
@@ -60,7 +60,7 @@ public class OptionsGui extends Screen
         return false;
     }
 
-    private class Button extends ButtonWidget
+    private class ColorSelectButton extends ButtonWidget
     {
         float[] color;
         int x;
@@ -68,9 +68,9 @@ public class OptionsGui extends Screen
         int width;
         int height;
         boolean selected;
-        Button(final int x, final int y, final int width, final int height, final Text string, final int colorIndex) {
-            super(x, y, width, height, string, button -> {
-                MeasureBox.colorIndex = colorIndex;
+        ColorSelectButton(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
+            super(x, y, width, height, new LiteralText(string), button -> {
+                ClientMeasureBox.selectColorIndex(colorIndex);
                 MinecraftClient.getInstance().openScreen((Screen)null);
             });
             this.selected = false;
@@ -79,7 +79,7 @@ public class OptionsGui extends Screen
             this.y = y + 2;
             this.width = width - 4;
             this.height = height - 4;
-            if (MeasureBox.colorIndex == colorIndex) {
+            if (ClientMeasureBox.colorIndex == colorIndex) {
                 this.setFocused(true);
                 this.selected = true;
             }

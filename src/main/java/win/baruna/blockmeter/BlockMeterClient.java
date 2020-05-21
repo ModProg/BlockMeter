@@ -29,7 +29,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.dimension.DimensionType;
 import win.baruna.blockmeter.gui.OptionsGui;
 
 public class BlockMeterClient implements ClientModInitializer
@@ -140,7 +139,7 @@ public class BlockMeterClient implements ClientModInitializer
                 final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
 
                 if (lastBox.isFinished()) {
-                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.dimension);
+                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getDimension().getSuffix());
                     this.boxes.add(box);
                 } else {
                     lastBox.setBlockEnd(block);
@@ -148,7 +147,7 @@ public class BlockMeterClient implements ClientModInitializer
                     sendBoxList();
                 }
             } else {
-                final ClientMeasureBox box2 = new ClientMeasureBox(block, playerEntity.dimension);
+                final ClientMeasureBox box2 = new ClientMeasureBox(block, playerEntity.world.getDimension().getSuffix());
                 this.boxes.add(box2);
 
             }
@@ -186,7 +185,7 @@ public class BlockMeterClient implements ClientModInitializer
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        final DimensionType currentDimension = client.player.dimension;
+        final String currentDimension = client.player.world.getDimension().getSuffix();
         if (showOtherUsersBoxes && otherUsersBoxes != null && otherUsersBoxes.size()>0) {
             this.otherUsersBoxes.forEach((playerText, boxList) -> {
                 boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));

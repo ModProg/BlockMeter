@@ -22,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.dimension.DimensionType;
 
 public class ClientMeasureBox extends MeasureBox
 {
@@ -35,7 +34,7 @@ public class ClientMeasureBox extends MeasureBox
         super();
     }
 
-    ClientMeasureBox(final BlockPos block, final DimensionType dimension) {
+    ClientMeasureBox(final BlockPos block, final String dimension) {
         this.blockStart = block;
         this.blockEnd = block;
         this.dimension = dimension;
@@ -72,12 +71,12 @@ public class ClientMeasureBox extends MeasureBox
 
     }
     
-    void render(Camera camera, MatrixStack stack, DimensionType currentDimension) {
+    void render(Camera camera, MatrixStack stack, String currentDimension) {
         render(camera, stack, currentDimension, null);
     }
     
-    void render(final Camera camera, MatrixStack stack, final DimensionType currentDimension, Text playerName) {
-        if (currentDimension != this.dimension) {
+    void render(final Camera camera, MatrixStack stack, final String currentDimension, Text playerName) {
+        if (!(currentDimension.equals(this.dimension))) {
             return;          }
         final Vec3d pos = camera.getPos();
 
@@ -101,34 +100,34 @@ public class ClientMeasureBox extends MeasureBox
 
         buffer.begin(3, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y1, (float)this.box.z1).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y1, (float)this.box.z1).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y1, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y1, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y1, (float)this.box.z1).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
 
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y2, (float)this.box.z1).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
 
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y2, (float)this.box.z1).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y2, (float)this.box.z1).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y2, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y2, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y2, (float)this.box.z1).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
 
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y2, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x1, (float)this.box.y1, (float)this.box.z2).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
 
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y1, (float)this.box.z2).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y2, (float)this.box.z2).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
 
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y2, (float)this.box.z1).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.x2, (float)this.box.y1, (float)this.box.z1).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
         tess.draw();
 
         if (ClientMeasureBox.innerDiagonal) {
             buffer.begin(1, VertexFormats.POSITION_COLOR);
-            buffer.vertex(model, (float)this.box.x1, (float)this.box.y1, (float)this.box.z1).color(r, g, b, 0.8f).next();
-            buffer.vertex(model, (float)this.box.x2, (float)this.box.y2, (float)this.box.z2).color(r, g, b, 0.8f).next();
+            buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+            buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
             tess.draw();
 
         }
@@ -148,7 +147,7 @@ public class ClientMeasureBox extends MeasureBox
         final int lengthZ = (int)this.box.getZLength();
 
         final Vec3d boxCenter = this.box.getCenter();
-        final double diagonalLength = new Vec3d(this.box.x1, this.box.y1, this.box.z1).distanceTo(new Vec3d(this.box.x2, this.box.y2, this.box.z2));
+        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ).distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
 
 
         final float yaw = camera.getYaw();
@@ -159,26 +158,26 @@ public class ClientMeasureBox extends MeasureBox
         frustum.setOrigin(pos.x, pos.y, pos.z);
 
         final List<Line> lines = new ArrayList<>();
-        lines.add(new Line(new Box(this.box.x1, this.box.y1, this.box.z1, this.box.x1, this.box.y1, this.box.z2), pos, frustum));
-        lines.add(new Line(new Box(this.box.x1, this.box.y2, this.box.z1, this.box.x1, this.box.y2, this.box.z2), pos, frustum));
-        lines.add(new Line(new Box(this.box.x2, this.box.y1, this.box.z1, this.box.x2, this.box.y1, this.box.z2), pos, frustum));
-        lines.add(new Line(new Box(this.box.x2, this.box.y2, this.box.z1, this.box.x2, this.box.y2, this.box.z2), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos, frustum));
         Collections.sort(lines);
         final Vec3d lineZ = lines.get(0).line.getCenter();
 
         lines.clear();
-        lines.add(new Line(new Box(this.box.x1, this.box.y1, this.box.z1, this.box.x1, this.box.y2, this.box.z1), pos, frustum));
-        lines.add(new Line(new Box(this.box.x1, this.box.y1, this.box.z2, this.box.x1, this.box.y2, this.box.z2), pos, frustum));
-        lines.add(new Line(new Box(this.box.x2, this.box.y1, this.box.z1, this.box.x2, this.box.y2, this.box.z1), pos, frustum));
-        lines.add(new Line(new Box(this.box.x2, this.box.y1, this.box.z2, this.box.x2, this.box.y2, this.box.z2), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos, frustum));
         Collections.sort(lines);
         final Vec3d lineY = lines.get(0).line.getCenter();
 
         lines.clear();
-        lines.add(new Line(new Box(this.box.x1, this.box.y1, this.box.z1, this.box.x2, this.box.y1, this.box.z1), pos, frustum));
-        lines.add(new Line(new Box(this.box.x1, this.box.y1, this.box.z2, this.box.x2, this.box.y1, this.box.z2), pos, frustum));
-        lines.add(new Line(new Box(this.box.x1, this.box.y2, this.box.z1, this.box.x2, this.box.y2, this.box.z1), pos, frustum));
-        lines.add(new Line(new Box(this.box.x1, this.box.y2, this.box.z2, this.box.x2, this.box.y2, this.box.z2), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos, frustum));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos, frustum));
         Collections.sort(lines);
         final Vec3d lineX = lines.get(0).line.getCenter();
 
@@ -205,7 +204,7 @@ public class ClientMeasureBox extends MeasureBox
         // stack.multiply(new Quaternion((float)(180.0f - yaw), 0.0f, 1.0f, 0.0f));
         // stack.multiply(new Quaternion((float)(-pitch), 1.0f, 0.0f, 0.0f));
         stack.scale(0.03f, -0.03f, 0.001f);
-        stack.translate((-textRenderer.getStringWidth(lengthString) / 2), 0.0, 0.0);
+        stack.translate((-textRenderer.getWidth(lengthString) / 2), 0.0, 0.0);
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         textRenderer.draw(new LiteralText(lengthString), 0.0f, 0.0f, 
                 this.color.getSignColor(),

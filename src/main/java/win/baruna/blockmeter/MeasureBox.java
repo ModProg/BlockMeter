@@ -4,14 +4,13 @@ package win.baruna.blockmeter;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.dimension.DimensionType;
 
 public class MeasureBox
 {
 
     BlockPos blockStart;
     BlockPos blockEnd;
-    DimensionType dimension;
+    String dimension;
     DyeColor color;
     boolean finished;
     
@@ -20,7 +19,7 @@ public class MeasureBox
     public void writePacketBuf(PacketByteBuf buf) {
         buf.writeBlockPos(this.blockStart);
         buf.writeBlockPos(this.blockEnd);
-        buf.writeIdentifier(DimensionType.getId(dimension));
+        buf.writeString(dimension);
         buf.writeInt(color.getId());
         buf.writeBoolean(finished);
     }
@@ -34,7 +33,7 @@ public class MeasureBox
     void fillFromPacketByteBuf(PacketByteBuf attachedData) {
         blockStart = attachedData.readBlockPos();
         blockEnd = attachedData.readBlockPos();
-        dimension = DimensionType.byId(attachedData.readIdentifier());
+        dimension = attachedData.readString();
         color = DyeColor.byId(attachedData.readInt());
         finished = attachedData.readBoolean();
         

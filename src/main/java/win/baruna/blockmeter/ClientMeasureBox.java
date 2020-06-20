@@ -40,7 +40,7 @@ public class ClientMeasureBox extends MeasureBox
         this.dimension = dimension;
         this.color = this.getNextColor();
         this.finished = false;
-        this.setBoundingBox();        setBoundingBox();
+        this.setBoundingBox();
     }
 
     public static ClientMeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {
@@ -134,14 +134,14 @@ public class ClientMeasureBox extends MeasureBox
         RenderSystem.enableTexture();
         RenderSystem.lineWidth(1.0f);
 
-        this.drawLength(camera, stack, playerName);
+        this.drawLengths(camera, stack, playerName);
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
         stack.pop();
     }
     
-    private void drawLength(final Camera camera, MatrixStack stack, final Text playerName) {
+    private void drawLengths(final Camera camera, MatrixStack stack, final Text playerName) {
         final int lengthX = (int)this.box.getXLength();
         final int lengthY = (int)this.box.getYLength();
         final int lengthZ = (int)this.box.getZLength();
@@ -193,7 +193,7 @@ public class ClientMeasureBox extends MeasureBox
     private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length) {
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-        final String lengthString = String.valueOf(length);
+        final LiteralText lengthString = new LiteralText(length);
 
         final float size = 0.03f;
 
@@ -201,21 +201,32 @@ public class ClientMeasureBox extends MeasureBox
         stack.translate(x, y + 0.15, z);
         stack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
         stack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch));
-        // stack.multiply(new Quaternion((float)(180.0f - yaw), 0.0f, 1.0f, 0.0f));
-        // stack.multiply(new Quaternion((float)(-pitch), 1.0f, 0.0f, 0.0f));
         stack.scale(0.03f, -0.03f, 0.001f);
-        stack.translate((-textRenderer.getWidth(lengthString) / 2), 0.0, 0.0);
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-        textRenderer.draw(new LiteralText(lengthString), 0.0f, 0.0f, 
+        int width = textRenderer.getWidth(lengthString);
+        stack.translate((-width / 2), 0.0, 0.0);
+        Matrix4f model = stack.peek().getModel();
+        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+
+        float[] colors = this.color.getColorComponents();
+        buffer.begin(7, VertexFormats.POSITION_COLOR);
+        buffer.vertex(model, -1, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, -1, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, width, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, width, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        Tessellator.getInstance().draw();
+
+        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(buffer);
+        textRenderer.draw(lengthString, 0.0f, 0.0f, 
                 this.color.getSignColor(),
                 false,                              // shadow
-                stack.peek().getModel(),            // matrix
+                model,                              // matrix
                 immediate,                          // draw buffer
                 true,                               // seeThrough
                 0,                                  // backgroundColor => underlineColor,
-                0x0                                 // light
+                0                                   // light
         );
         immediate.draw();
+
         stack.pop();
     }
     

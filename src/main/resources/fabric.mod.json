@@ -24,7 +24,9 @@
   "authors": [ "MadeOke", "Giselbaer" ],
 
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric",
+    "sources": "https://github.com/gbl/BlockMeter",
+    "issues": "https://github.com/gbl/BlockMeter/issues"
   },
 
   "license": "MIT"

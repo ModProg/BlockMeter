@@ -186,6 +186,7 @@ public class BlockMeterClient implements ClientModInitializer
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
         final String currentDimension = client.player.world.getDimension().getSuffix();
+        client.textRenderer.draw(stack, "XXX", -100, -100, 0);  // MEH! but this seems to be needed to get the first background rectangle
         if (showOtherUsersBoxes && otherUsersBoxes != null && otherUsersBoxes.size()>0) {
             this.otherUsersBoxes.forEach((playerText, boxList) -> {
                 boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));

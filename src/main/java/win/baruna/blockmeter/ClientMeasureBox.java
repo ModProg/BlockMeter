@@ -12,6 +12,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.AffineTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.network.PacketByteBuf;
@@ -154,8 +155,8 @@ public class ClientMeasureBox extends MeasureBox
         final float pitch = camera.getPitch();
         final Vec3d pos = camera.getPos();
 
-        final Frustum frustum = new Frustum();
-        frustum.setOrigin(pos.x, pos.y, pos.z);
+        final Frustum frustum = new Frustum(stack.peek().getModel(), AffineTransformation.identity().getMatrix());
+        frustum.setPosition(pos.x, pos.y, pos.z);
 
         final List<Line> lines = new ArrayList<>();
         lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ), pos, frustum));
@@ -261,7 +262,7 @@ public class ClientMeasureBox extends MeasureBox
         double distance;
         Line(final Box line, final Vec3d pos, final Frustum frustum) {
             this.line = line;
-            this.isVisible = frustum.intersects(line);
+            this.isVisible = frustum.isVisible(line);
             this.distance = line.getCenter().distanceTo(pos);
         }
         @Override
@@ -272,9 +273,10 @@ public class ClientMeasureBox extends MeasureBox
             return l.isVisible ? 1 : 0;
         }
     }
-    
+
     private class Frustum {
-        void setOrigin(double a, double b, double c) {}
-        boolean intersects(Box line) { return true; }
+        Frustum(Matrix4f a, Matrix4f b) {}
+        void setPosition(double a, double b, double c) {}
+        boolean isVisible(Box line) { return true; }
     }
 }

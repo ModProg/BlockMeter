@@ -8,7 +8,11 @@
     "main": [ "win.baruna.blockmeter.BlockMeterServer" ]
   },
   "custom": {
-      "xxxmodmenu:clientsideOnly": true
+        "xxxmodmenu:clientsideOnly": true,
+        "modupdater": {
+            "strategy": "json",
+            "url": "https://raw.githubusercontent.com/gbl/ModVersionInfo/master/BlockMeter.json"
+        }
   },
   "mixins": [
     "blockmeter.mixins.json"
@@ -17,7 +21,10 @@
     "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
-  
+    "recommends": {
+      "modmenu" : "*",
+      "modupdater": ">=1.1.7"
+    },    
   "name": "Block Meter",
   "description": "A simple mod to measure your blocks!",
   "icon": "pack.png",

@@ -1,2 +1,12 @@
 .gradle/
 build/
+
+# Java Settings
+.project
+.settings/
+
+# Minecraft
+run/
+
+# VS Code
+.code/

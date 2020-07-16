@@ -53,7 +53,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
     
     private byte[] buildS2CPacket() {
         
-        HashMap<UUID, String> playerNames = new HashMap();
+        HashMap<UUID, String> playerNames = new HashMap<UUID, String>();
         
         int neededSize=4;
         for (UUID uuid:playerBoxes.keySet()) {

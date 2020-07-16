@@ -1,19 +1,22 @@
-package win.baruna.blockmeter;  
+package win.baruna.blockmeter;
 
-import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.lwjgl.glfw.GLFW;
+
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
-import net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry;
-import net.fabricmc.fabric.api.event.client.ClientTickCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
@@ -25,7 +28,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -67,18 +69,13 @@ public class BlockMeterClient implements ClientModInitializer
     
     @Override
     public void onInitializeClient() {
-        KeyBindingRegistry.INSTANCE.addCategory("blockmeter.key");
-
-        final FabricKeyBinding keyBinding = FabricKeyBinding.Builder
-                .create(new Identifier("blockmeter:assign"), InputUtil.Type.KEYSYM, 77, "blockmeter.key").build();
-        final FabricKeyBinding keyBindingMenu = FabricKeyBinding.Builder
-                .create(new Identifier("blockmeter:menu"), InputUtil.Type.KEYSYM, 342, "blockmeter.key").build();
-
-        KeyBindingRegistry.INSTANCE.register(keyBinding);
-        KeyBindingRegistry.INSTANCE.register(keyBindingMenu);
+        final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.blockmeter.key");
+        final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
+        KeyBindingHelper.registerKeyBinding(keyBinding);
+        KeyBindingHelper.registerKeyBinding(keyBindingMenu);
         
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
-        ClientTickCallback.EVENT.register(e -> {
+        ClientTickEvents.START_CLIENT_TICK.register(e -> {
 
             if (keyBinding.wasPressed()) {
                 if (this.active) {
@@ -171,7 +168,7 @@ public class BlockMeterClient implements ClientModInitializer
         for (int i=0; i<playerCount; i++) {
             Text playerName = data.readText();
             int boxCount = data.readInt();
-            List<ClientMeasureBox> boxes = new ArrayList(boxCount);
+            List<ClientMeasureBox> boxes = new ArrayList<ClientMeasureBox>(boxCount);
             for (int j=0; j<boxCount; j++) {
                 boxes.add(ClientMeasureBox.fromPacketByteBuf(data));
             }

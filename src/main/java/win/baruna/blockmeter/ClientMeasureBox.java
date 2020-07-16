@@ -101,34 +101,34 @@ public class ClientMeasureBox extends MeasureBox
 
         buffer.begin(3, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
         tess.draw();
 
         if (ClientMeasureBox.innerDiagonal) {
             buffer.begin(1, VertexFormats.POSITION_COLOR);
-            buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, 0.8f).next();
-            buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, 0.8f).next();
+            buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
+            buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
             tess.draw();
 
         }
@@ -202,7 +202,7 @@ public class ClientMeasureBox extends MeasureBox
         stack.translate(x, y + 0.15, z);
         stack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
         stack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch));
-        stack.scale(0.03f, -0.03f, 0.001f);
+        stack.scale(size, -size, 0.001f);
         int width = textRenderer.getWidth(lengthString);
         stack.translate((-width / 2), 0.0, 0.0);
         Matrix4f model = stack.peek().getModel();

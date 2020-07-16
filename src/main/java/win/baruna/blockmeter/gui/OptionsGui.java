@@ -19,7 +19,6 @@ import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ClientMeasureBox;
 public class OptionsGui extends Screen
 {
-    private static final LiteralText empty = new LiteralText("");
 
     public OptionsGui() {
         super(NarratorManager.EMPTY);

@@ -1,12 +1,15 @@
 .gradle/
 build/
+bin/
 
 # Java Settings
 .project
 .settings/
+.classpath
 
 # Minecraft
 run/
 
 # VS Code
 .code/
+.vscode/

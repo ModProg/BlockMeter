@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.network.PacketByteBuf;
@@ -30,7 +30,7 @@ public class BlockMeterServer implements ModInitializer {
             (packetContext,attachedData) -> {
                 processClientPacket(packetContext, attachedData);
         });
-        ServerStartCallback.EVENT.register(this::onStartServer);
+        ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
     }
     
     public static void removePlayer(ServerPlayerEntity player) {

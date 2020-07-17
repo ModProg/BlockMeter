@@ -194,6 +194,7 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length) {
+        @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final LiteralText lengthString = new LiteralText(length);

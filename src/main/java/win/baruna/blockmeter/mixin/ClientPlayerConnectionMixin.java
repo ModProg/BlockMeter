@@ -10,15 +10,15 @@ import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import win.baruna.blockmeter.BlockMeterClient;
 
 @Mixin(ClientPlayNetworkHandler.class)
-public class ClientPlayerDisconnectMixin {
+public class ClientPlayerConnectionMixin {
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
     private void onConnectedToServerEvent(GameJoinS2CPacket packet, CallbackInfo cbi) {
-        BlockMeterClient.instance.connect();
+        BlockMeterClient.instance.onConnected();
     }
 
     @Inject(method = "onDisconnected", at = @At("HEAD"))
-    public void onDisconnectFromServerEvent(CallbackInfo cbi) {
-        BlockMeterClient.instance.disconnect();
+    public void onDisconnectedFromServerEvent(CallbackInfo cbi) {
+        BlockMeterClient.instance.onDisconnected();
     }
 }

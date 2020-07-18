@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import win.baruna.blockmeter.BlockMeterServer;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public class ServerPlayerDisconnectMixin {
+public class ServerPlayerConnectionMixin {
 
     @Shadow
     public ServerPlayerEntity player;

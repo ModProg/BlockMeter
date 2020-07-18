@@ -86,17 +86,17 @@ public class BlockMeterClient implements ClientModInitializer {
     }
 
     /**
-     * Clear and remove other Users Measuring-Boxes
+     * Gets Triggered when the Player disconnects from the Server
      */
-    public void disconnect() {
+    public void onDisconnected() {
         otherUsersBoxes = null;
         clear();
     }
 
     /**
-     * Start other Users Measuring-Box synchronization
+     * Gets Triggered when the Player connects to the Server
      */
-    public void connect() {
+    public void onConnected() {
         sendBoxList(); // to make the server send other user's boxes
     }
 

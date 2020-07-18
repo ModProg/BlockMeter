@@ -8,6 +8,8 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 import io.netty.buffer.Unpooled;
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -106,6 +108,7 @@ public class BlockMeterClient implements ClientModInitializer {
         final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
+        AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
 
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {

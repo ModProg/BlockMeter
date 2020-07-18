@@ -1,4 +1,5 @@
 {
+    "blockmeter.name": "Block Meter",
     "blockmeter.keepcolor": "Always Use Current Color: %s",
     "blockmeter.diagonal": "Inner Diagonal Line: %s",
     "blockmeter.toggle.on": "%s is now used as your block meter!",

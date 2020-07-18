@@ -23,6 +23,8 @@ public class OptionsGui extends Screen {
         super(NarratorManager.EMPTY);
     }
 
+    final static int BUTTONWIDTH = 200;
+
     @Override
     protected void init() {
         for (int i = 0; i < 4; ++i) {
@@ -30,23 +32,23 @@ public class OptionsGui extends Screen {
                 this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
             }
         }
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - 90, this.height / 2 + 10, 180, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 10, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepcolor", new Object[] {
-                        ClientMeasureBox.incrementColor ? "NO" : "YES"
+                        new TranslatableText(ClientMeasureBox.incrementColor ? "options.off" : "options.on")
                 }), button -> {
                     ClientMeasureBox.incrementColor = !ClientMeasureBox.incrementColor;
-                    this.init();
+                    MinecraftClient.getInstance().openScreen((Screen) new OptionsGui());
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - 90, this.height / 2 + 32, 180, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 32, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
-                        ClientMeasureBox.innerDiagonal ? "Disable" : "Enable"
+                    new TranslatableText(ClientMeasureBox.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
                     ClientMeasureBox.innerDiagonal = !ClientMeasureBox.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - 90, this.height / 2 + 54, 180, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 54, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showothers", new Object[] {
-                        BlockMeterClient.getShowOtherUsers() ? "NO" : "YES"
+                    new TranslatableText( BlockMeterClient.getShowOtherUsers() ? "options.off" : "options.on")
                 }), button -> {
                     BlockMeterClient.setShowOtherUsers(!BlockMeterClient.getShowOtherUsers());
                     MinecraftClient.getInstance().openScreen((Screen) null);

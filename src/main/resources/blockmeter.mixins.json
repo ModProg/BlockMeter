@@ -3,12 +3,12 @@
   "package": "win.baruna.blockmeter.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ServerPlayerDisconnectMixin"
+    "ServerPlayerConnectionMixin"
   ],
   "client": [
     "GameRendererMixin",
     "GameMixin",
-    "ClientPlayerDisconnectMixin"
+    "ClientPlayerConnectionMixin"
   ],
   "server": [
   ],

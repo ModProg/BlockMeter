@@ -1,6 +1,9 @@
 package win.baruna.blockmeter;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -186,20 +189,27 @@ public class ClientMeasureBox extends MeasureBox {
 
         String playerNameStr = (playerName == null ? "" : playerName.getString() + " : ");
         if (ClientMeasureBox.innerDiagonal) {
-            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch, playerNameStr + String.format("%.2f", diagonalLength));
+            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch, playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX));
-        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + String.valueOf(lengthY));
-        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ));
+        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX), pos);
+        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + String.valueOf(lengthY), pos);
+        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ), pos);
     }
 
-    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length) {
+    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length, final Vec3d playerPos) {
         @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final LiteralText lengthString = new LiteralText(length);
 
-        final float size = 0.03f;
+        float size = 0.03f;
+        final int constDist=10;
+
+        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().consistentLabelSize) {
+            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x) + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
+            if(dist > constDist)
+                size = dist * size/constDist;
+        }
 
         stack.push();
         stack.translate(x, y + 0.15, z);

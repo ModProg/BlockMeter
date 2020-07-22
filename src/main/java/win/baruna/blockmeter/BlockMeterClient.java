@@ -108,7 +108,9 @@ public class BlockMeterClient implements ClientModInitializer {
         final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
+
         AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+
 
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {

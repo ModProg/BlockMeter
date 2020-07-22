@@ -5,8 +5,12 @@
     "blockmeter.toggle.on": "%s wird jetzt als Blockmeter verwendet!",
     "blockmeter.toggle.off": "Blockmeter ist abgeschaltet!",
     "blockmeter.clearlast": "Letzte Box gelöscht",
-    "category.blockmeter.key": "Blockmeter",
     "blockmeter.showothers": "Boxen anderer Spieler anzeigen: %s",
+    
+    "category.blockmeter.key": "Blockmeter",
+    
     "key.blockmeter.assign": "Blockmeter an/aus",
-    "key.blockmeter.menu": "Optionen zeigen"
+    "key.blockmeter.menu": "Optionen zeigen",
+
+    "text.autoconfig.blockmeter.option.consistentLabelSize": "Einheitliche Boxbeschriftungsgröße"
 }

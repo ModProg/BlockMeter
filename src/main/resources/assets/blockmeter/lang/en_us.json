@@ -5,8 +5,12 @@
     "blockmeter.toggle.on": "%s is now used as your block meter!",
     "blockmeter.toggle.off": "Block Meter is now turned off!",
     "blockmeter.clearlast": "Last box cleared",
-    "category.blockmeter.key": "Block Meter",
     "blockmeter.showothers": "Show other user's boxses: %s",
+
+    "category.blockmeter.key": "Block Meter",
+
     "key.blockmeter.assign": "Toggle Block Meter",
-    "key.blockmeter.menu": "Show Options"
+    "key.blockmeter.menu": "Show Options",
+
+    "text.autoconfig.blockmeter.option.consistentLabelSize": "Consistant box label size"
 }

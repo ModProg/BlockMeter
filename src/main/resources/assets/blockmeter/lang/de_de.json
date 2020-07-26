@@ -1,5 +1,4 @@
 {
-    "blockmeter.name": "Blockmeter",
     "blockmeter.keepcolor": "Immer aktuelle Farbe: %s",
     "blockmeter.diagonal": "Innere diagonale Linie: %s",
     "blockmeter.toggle.on": "%s wird jetzt als Blockmeter verwendet!",
@@ -12,7 +11,8 @@
     
     "key.blockmeter.assign": "Blockmeter an/aus",
     "key.blockmeter.menu": "Optionen zeigen",
-
+    
+    "text.autoconfig.blockmeter.title": "Blockmeter",
     "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimalgröße für Boxbeschriftungen",
     "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Entferne Boxen beim ausschalten"
 }

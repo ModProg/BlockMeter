@@ -1,5 +1,4 @@
 {
-    "blockmeter.name": "Block Meter",
     "blockmeter.keepcolor": "Always Use Current Color: %s",
     "blockmeter.diagonal": "Inner Diagonal Line: %s",
     "blockmeter.toggle.on": "%s is now used as your block meter!",
@@ -13,6 +12,7 @@
     "key.blockmeter.assign": "Toggle Block Meter",
     "key.blockmeter.menu": "Show Options",
 
+    "text.autoconfig.blockmeter.title": "Block Meter",
     "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimal Box Label Size",
     "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Remove Boxes on Disable"
 }

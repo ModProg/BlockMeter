@@ -5,6 +5,7 @@
     "blockmeter.toggle.on": "%s is now used as your block meter!",
     "blockmeter.toggle.off": "Block Meter is now turned off!",
     "blockmeter.clearlast": "Last box cleared",
+    "blockmeter.clearall": "All boxes cleared",
     "blockmeter.showothers": "Show other user's boxses: %s",
 
     "category.blockmeter.key": "Block Meter",
@@ -12,5 +13,6 @@
     "key.blockmeter.assign": "Toggle Block Meter",
     "key.blockmeter.menu": "Show Options",
 
-    "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimal box label size"
+    "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimal Box Label Size",
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Remove Boxes on Disable"
 }

@@ -110,7 +110,7 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
         AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-
+        ModConfig config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
@@ -122,11 +122,17 @@ public class BlockMeterClient implements ClientModInitializer {
                             sendBoxList();
                         }
                         e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
+                    } else if (Screen.hasControlDown()) {
+                        this.boxes.clear();
+                        sendBoxList();
+                        e.player.sendMessage(new TranslatableText("blockmeter.clearall"), true);
                     } else {
                         this.active = false;
                         e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                        this.boxes.clear();
-                        sendBoxList();
+                        if (config.deleteBoxesOnDisable) {
+                            this.boxes.clear();
+                            sendBoxList();
+                        }
                     }
                 } else {
                     active = true;

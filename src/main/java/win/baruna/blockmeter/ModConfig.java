@@ -7,4 +7,5 @@ import me.sargunvohra.mcmods.autoconfig1u.annotation.Config;
 public class ModConfig implements ConfigData {
     boolean minimalLabelSize = false;
     
+    boolean deleteBoxesOnDisable = true;
 }

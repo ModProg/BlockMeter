@@ -62,7 +62,7 @@ dependencies {
     modCompile  "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
     modCompile  "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
 
-    include	    "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
+    include     "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
     include     "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
 }
 

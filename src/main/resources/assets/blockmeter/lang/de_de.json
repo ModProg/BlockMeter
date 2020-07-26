@@ -14,5 +14,5 @@
     
     "text.autoconfig.blockmeter.title": "Blockmeter",
     "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimalgröße für Boxbeschriftungen",
-    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Entferne Boxen beim ausschalten"
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Entferne Boxen beim deaktivieren"
 }

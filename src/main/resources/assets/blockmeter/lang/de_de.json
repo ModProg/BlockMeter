@@ -12,5 +12,5 @@
     "key.blockmeter.assign": "Blockmeter an/aus",
     "key.blockmeter.menu": "Optionen zeigen",
 
-    "text.autoconfig.blockmeter.option.consistentLabelSize": "Einheitliche Boxbeschriftungsgröße"
+    "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimalgröße für Boxbeschriftungen"
 }

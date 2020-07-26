@@ -205,7 +205,7 @@ public class ClientMeasureBox extends MeasureBox {
         float size = 0.03f;
         final int constDist=10;
 
-        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().consistentLabelSize) {
+        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
             final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x) + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
             if(dist > constDist)
                 size = dist * size/constDist;

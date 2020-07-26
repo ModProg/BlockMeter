@@ -12,5 +12,5 @@
     "key.blockmeter.assign": "Toggle Block Meter",
     "key.blockmeter.menu": "Show Options",
 
-    "text.autoconfig.blockmeter.option.consistentLabelSize": "Consistant box label size"
+    "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimal box label size"
 }

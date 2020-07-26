@@ -29,7 +29,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -102,6 +101,18 @@ public class BlockMeterClient implements ClientModInitializer {
         sendBoxList(); // to make the server send other user's boxes
     }
 
+    /**
+     * Returns the currently active box
+     * 
+     * @return currently open box or null if none
+     */
+    public ClientMeasureBox currentBox() {
+        final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
+        if (!lastBox.isFinished())
+            return lastBox;
+        return null;
+    }
+
     @Override
     public void onInitializeClient() {
         final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.blockmeter.key");
@@ -151,9 +162,8 @@ public class BlockMeterClient implements ClientModInitializer {
             }
 
             if (this.active && this.boxes.size() > 0) {
-                final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
-                if (!lastBox.isFinished()) {
-                    lastBox.color = DyeColor.byId(ClientMeasureBox.colorIndex);
+                final ClientMeasureBox lastBox = currentBox();
+                if (lastBox != null) {
                     final HitResult rayHit = e.player.rayTrace((double) e.interactionManager.getReachDistance(), 1.0f, false);
                     if (rayHit.getType() == HitResult.Type.BLOCK) {
                         final BlockHitResult blockHitResult = (BlockHitResult) rayHit;

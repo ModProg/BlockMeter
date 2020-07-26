@@ -6,6 +6,7 @@ import me.sargunvohra.mcmods.autoconfig1u.annotation.Config;
 @Config(name = "blockmeter")
 public class ModConfig implements ConfigData {
     boolean minimalLabelSize = false;
-    
+
     boolean deleteBoxesOnDisable = true;
+
 }

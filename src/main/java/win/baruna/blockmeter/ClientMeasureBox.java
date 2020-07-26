@@ -1,12 +1,12 @@
 package win.baruna.blockmeter;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
@@ -98,7 +98,6 @@ public class ClientMeasureBox extends MeasureBox {
 
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
-
         final float[] color = this.color.getColorComponents();
         final float r = color[0];
         final float g = color[1];
@@ -203,12 +202,12 @@ public class ClientMeasureBox extends MeasureBox {
         final LiteralText lengthString = new LiteralText(length);
 
         float size = 0.03f;
-        final int constDist=10;
+        final int constDist = 10;
 
         if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
             final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x) + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
-            if(dist > constDist)
-                size = dist * size/constDist;
+            if (dist > constDist)
+                size = dist * size / constDist;
         }
 
         stack.push();
@@ -300,5 +299,9 @@ public class ClientMeasureBox extends MeasureBox {
         boolean isVisible(Box line) {
             return true;
         }
+    }
+
+    public void setColor(DyeColor color) {
+        this.color = color;
     }
 }

@@ -32,23 +32,23 @@ public class OptionsGui extends Screen {
                 this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
             }
         }
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 10, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepcolor", new Object[] {
                         new TranslatableText(ClientMeasureBox.incrementColor ? "options.off" : "options.on")
                 }), button -> {
                     ClientMeasureBox.incrementColor = !ClientMeasureBox.incrementColor;
                     MinecraftClient.getInstance().openScreen((Screen) new OptionsGui());
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 32, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
-                    new TranslatableText(ClientMeasureBox.innerDiagonal ? "options.on" : "options.off")
+                        new TranslatableText(ClientMeasureBox.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
                     ClientMeasureBox.innerDiagonal = !ClientMeasureBox.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 54, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showothers", new Object[] {
-                    new TranslatableText( BlockMeterClient.getShowOtherUsers() ? "options.off" : "options.on")
+                        new TranslatableText(BlockMeterClient.getShowOtherUsers() ? "options.off" : "options.on")
                 }), button -> {
                     BlockMeterClient.setShowOtherUsers(!BlockMeterClient.getShowOtherUsers());
                     MinecraftClient.getInstance().openScreen((Screen) null);
@@ -77,10 +77,14 @@ public class OptionsGui extends Screen {
         ColorSelectButton(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
             super(x, y, width, height, new LiteralText(string), button -> {
                 ClientMeasureBox.selectColorIndex(colorIndex);
+
+                final ClientMeasureBox currentBox = BlockMeterClient.instance.currentBox();
+                if (currentBox != null)
+                    currentBox.setColor(DyeColor.byId(colorIndex));
                 MinecraftClient.getInstance().openScreen((Screen) null);
             });
             this.selected = false;
-            this.color = DyeColor.values()[colorIndex].getColorComponents();
+            this.color = DyeColor.byId(colorIndex).getColorComponents();
             this.x = x + 2;
             this.y = y + 2;
             this.width = width - 4;

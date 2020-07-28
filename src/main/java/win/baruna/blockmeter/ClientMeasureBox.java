@@ -196,11 +196,11 @@ public class ClientMeasureBox extends MeasureBox {
         this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ), pos);
     }
 
-    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length, final Vec3d playerPos) {
+    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String text, final Vec3d playerPos) {
         @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-        final LiteralText lengthString = new LiteralText(length);
+        final LiteralText lengthString = new LiteralText(text);
 
         float size = 0.03f;
         final int constDist = 10;

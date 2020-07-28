@@ -21,6 +21,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
@@ -36,7 +37,7 @@ public class ClientMeasureBox extends MeasureBox {
         super();
     }
 
-    ClientMeasureBox(final BlockPos block, final String dimension) {
+    ClientMeasureBox(final BlockPos block, final Identifier dimension) {
         this.blockStart = block;
         this.blockEnd = block;
         this.dimension = dimension;
@@ -77,11 +78,11 @@ public class ClientMeasureBox extends MeasureBox {
 
     }
 
-    void render(Camera camera, MatrixStack stack, String currentDimension) {
+    void render(Camera camera, MatrixStack stack, Identifier currentDimension) {
         render(camera, stack, currentDimension, null);
     }
 
-    void render(final Camera camera, MatrixStack stack, final String currentDimension, Text playerName) {
+    void render(final Camera camera, MatrixStack stack, final Identifier currentDimension, Text playerName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }

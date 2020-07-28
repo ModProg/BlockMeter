@@ -2,6 +2,8 @@ package win.baruna.blockmeter.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.ConfigManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -16,6 +18,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ClientMeasureBox;
+import win.baruna.blockmeter.ModConfig;
 
 public class OptionsGui extends Screen {
 
@@ -27,6 +30,9 @@ public class OptionsGui extends Screen {
 
     @Override
     protected void init() {
+        // This is ugly I know, but I did not find something better
+        ConfigManager<ModConfig> confmgr = (ConfigManager<ModConfig>) AutoConfig.getConfigHolder(ModConfig.class);
+        ModConfig config = confmgr.getConfig();
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
                 this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
@@ -34,24 +40,27 @@ public class OptionsGui extends Screen {
         }
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepcolor", new Object[] {
-                        new TranslatableText(ClientMeasureBox.incrementColor ? "options.off" : "options.on")
+                        new TranslatableText(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
-                    ClientMeasureBox.incrementColor = !ClientMeasureBox.incrementColor;
+                    config.incrementColor = !config.incrementColor;
                     MinecraftClient.getInstance().openScreen((Screen) new OptionsGui());
+                    confmgr.save();
                 }));
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
-                        new TranslatableText(ClientMeasureBox.innerDiagonal ? "options.on" : "options.off")
+                        new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
-                    ClientMeasureBox.innerDiagonal = !ClientMeasureBox.innerDiagonal;
+                    config.innerDiagonal = !config.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
+                    confmgr.save();
                 }));
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showothers", new Object[] {
-                        new TranslatableText(BlockMeterClient.getShowOtherUsers() ? "options.off" : "options.on")
+                        new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
-                    BlockMeterClient.setShowOtherUsers(!BlockMeterClient.getShowOtherUsers());
+                    config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
                     MinecraftClient.getInstance().openScreen((Screen) null);
+                    confmgr.save();
                 }));
     }
 

@@ -250,16 +250,26 @@ public class BlockMeterClient implements ClientModInitializer {
         final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
         client.textRenderer.draw(stack, "XXX", -100, -100, 0); // MEH! but this seems to be needed to get the first background rectangle
-        if (config.showOtherUsersBoxes && otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
-            this.otherUsersBoxes.forEach((playerText, boxList) -> {
-                boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
-            });
-            this.boxes.forEach(box -> {
-                if (!box.isFinished())
-                    box.render(camera, stack, currentDimension);
-            });
-        } else if (this.active) {
-            this.boxes.forEach(box -> box.render(camera, stack, currentDimension));
-        }
+        if (this.active || config.showBoxesWhenDisabled)
+            if (config.showOtherUsersBoxes) {
+                if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
+                    this.otherUsersBoxes.forEach((playerText, boxList) -> {
+                        boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
+                    });
+                    this.boxes.forEach(box -> {
+                        if (!box.isFinished())
+                            box.render(camera, stack, currentDimension);
+                    });
+                }
+                if (!config.sendBoxes)
+                    this.boxes.forEach(box -> {
+                        if (box.isFinished())
+                            box.render(camera, stack, currentDimension, client.player.getDisplayName());
+                        else
+                            box.render(camera, stack, currentDimension);
+                    });
+            } else
+                this.boxes.forEach(box -> box.render(camera, stack, currentDimension));
+
     }
 }

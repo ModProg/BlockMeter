@@ -12,6 +12,7 @@ public class ModConfig implements ConfigData {
     public boolean deleteBoxesOnDisable = true;
     @ConfigEntry.Gui.Tooltip(count = 3)
     public boolean sendBoxes = true;
+    public boolean showBoxesWhenDisabled = false;
 
     @ConfigEntry.Gui.Excluded
     public boolean incrementColor = true;

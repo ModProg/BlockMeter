@@ -198,7 +198,7 @@ public class ClientMeasureBox extends MeasureBox {
         @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-        final LiteralText lengthString = new LiteralText(text);
+        final LiteralText literalText = new LiteralText(text);
 
         float size = 0.03f;
         final int constDist = 10;
@@ -214,7 +214,7 @@ public class ClientMeasureBox extends MeasureBox {
         stack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
         stack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch));
         stack.scale(size, -size, 0.001f);
-        int width = textRenderer.getWidth(lengthString);
+        int width = textRenderer.getWidth(literalText);
         stack.translate((-width / 2), 0.0, 0.0);
         Matrix4f model = stack.peek().getModel();
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
@@ -228,14 +228,14 @@ public class ClientMeasureBox extends MeasureBox {
         Tessellator.getInstance().draw();
 
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(buffer);
-        textRenderer.draw(lengthString, 0.0f, 0.0f,
+        textRenderer.draw(literalText, 0.0f, 0.0f,
                 this.color.getSignColor(),
                 false,                              // shadow
                 model,                              // matrix
                 immediate,                          // draw buffer
                 true,                               // seeThrough
                 0,                                  // backgroundColor => underlineColor,
-                0                                   // light
+                0                                  // light
         );
         immediate.draw();
 

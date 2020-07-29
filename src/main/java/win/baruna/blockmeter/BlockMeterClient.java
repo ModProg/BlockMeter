@@ -105,9 +105,11 @@ public class BlockMeterClient implements ClientModInitializer {
      * @return currently open box or null if none
      */
     public ClientMeasureBox currentBox() {
-        final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
-        if (!lastBox.isFinished())
-            return lastBox;
+        if(boxes.size()>0){
+            final ClientMeasureBox lastBox = boxes.get(boxes.size() - 1);
+            if (!lastBox.isFinished())
+                return lastBox;
+        }
         return null;
     }
 

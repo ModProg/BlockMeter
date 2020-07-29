@@ -30,6 +30,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -76,20 +77,66 @@ public class BlockMeterClient implements ClientModInitializer {
     }
 
     /**
-     * Clears the created Boxes and disables BlockMeter
+     * Disables BlockMeter
+     */
+    public void disable() {
+        active = false;
+        if (confmgr.getConfig().deleteBoxesOnDisable) {
+            clear();
+        }
+    }
+
+    public void reset() {
+        otherUsersBoxes = null;
+        boxes.clear();
+
+        // Resets Color to always start with white in an other world
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = 0;
+            confmgr.save();
+        }
+    }
+
+    /**
+     * Clears Boxes and sends this information to the server
      */
     public void clear() {
-        active = false;
         boxes.clear();
-        ClientMeasureBox.colorIndex = 0;
+        sendBoxList();
+
+        // Reset the color as all Boxes where deleted
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = 0;
+            confmgr.save();
+        }
+    }
+
+    /**
+     * Removes the last box
+     */
+    public boolean undo() {
+        if (this.boxes.size() == 0)
+            return false;
+
+        this.boxes.remove(this.boxes.size() - 1);
+        sendBoxList();
+
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = Math.floorMod(cfg.colorIndex - 1, DyeColor.values().length);
+            confmgr.save();
+        }
+
+        return true;
     }
 
     /**
      * Gets Triggered when the Player disconnects from the Server
      */
     public void onDisconnected() {
-        otherUsersBoxes = null;
-        clear();
+        reset();
     }
 
     /**
@@ -120,29 +167,21 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
+        // This is ugly I know, but I did not find something better
         confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-        ModConfig config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (this.active) {
                     if (Screen.hasShiftDown()) {
-                        if (this.boxes.size() > 0) {
-                            this.boxes.remove(this.boxes.size() - 1);
-                            sendBoxList();
-                        }
-                        e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
+                        if (undo())
+                            e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
                     } else if (Screen.hasControlDown()) {
-                        this.boxes.clear();
-                        sendBoxList();
+                        clear();
                         e.player.sendMessage(new TranslatableText("blockmeter.clearall"), true);
                     } else {
-                        this.active = false;
+                        disable();
                         e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                        if (config.deleteBoxesOnDisable) {
-                            this.boxes.clear();
-                            sendBoxList();
-                        }
                     }
                 } else {
                     active = true;
@@ -249,11 +288,11 @@ public class BlockMeterClient implements ClientModInitializer {
         final Camera camera = client.gameRenderer.getCamera();
         final Identifier currentDimension = client.player.world.getDimensionRegistryKey().getValue();
 
-        final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
+        final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
         client.textRenderer.draw(stack, "XXX", -100, -100, 0); // MEH! but this seems to be needed to get the first background rectangle
-        if (this.active || config.showBoxesWhenDisabled)
-            if (config.showOtherUsersBoxes) {
+        if (this.active || cfg.showBoxesWhenDisabled)
+            if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
                     this.otherUsersBoxes.forEach((playerText, boxList) -> {
                         boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
@@ -263,7 +302,7 @@ public class BlockMeterClient implements ClientModInitializer {
                             box.render(camera, stack, currentDimension);
                     });
                 }
-                if (!config.sendBoxes)
+                if (!cfg.sendBoxes)
                     this.boxes.forEach(box -> {
                         if (box.isFinished())
                             box.render(camera, stack, currentDimension, client.player.getDisplayName());

@@ -29,9 +29,6 @@ import net.minecraft.util.math.Vec3d;
 
 public class ClientMeasureBox extends MeasureBox {
     Box box;
-    public static int colorIndex;
-    public static boolean incrementColor;
-    public static boolean innerDiagonal;
 
     private ClientMeasureBox() {
         super();
@@ -41,7 +38,7 @@ public class ClientMeasureBox extends MeasureBox {
         this.blockStart = block;
         this.blockEnd = block;
         this.dimension = dimension;
-        this.color = this.getNextColor();
+        this.color = getNextColor();
         this.finished = false;
         this.setBoundingBox();
     }
@@ -59,7 +56,8 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     public static void selectColorIndex(int newColor) {
-        colorIndex = newColor;
+        BlockMeterClient.confmgr.getConfig().colorIndex = Math.floorMod(newColor, DyeColor.values().length);
+        BlockMeterClient.confmgr.save();
     }
 
     private void setBoundingBox() {
@@ -131,7 +129,7 @@ public class ClientMeasureBox extends MeasureBox {
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
         tess.draw();
 
-        if (ClientMeasureBox.innerDiagonal) {
+        if (BlockMeterClient.confmgr.getConfig().innerDiagonal) {
             buffer.begin(1, VertexFormats.POSITION_COLOR);
             buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
             buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
@@ -188,7 +186,7 @@ public class ClientMeasureBox extends MeasureBox {
         final Vec3d lineX = lines.get(0).line.getCenter();
 
         String playerNameStr = (playerName == null ? "" : playerName.getString() + " : ");
-        if (ClientMeasureBox.innerDiagonal) {
+        if (BlockMeterClient.confmgr.getConfig().innerDiagonal) {
             this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch, playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
         this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX), pos);
@@ -244,17 +242,19 @@ public class ClientMeasureBox extends MeasureBox {
         stack.pop();
     }
 
-    private DyeColor getNextColor() {
-        final DyeColor selectedColor = DyeColor.byId(ClientMeasureBox.colorIndex);
+    /**
+     * If enabled increments to next color
+     * @return currently selected Color
+     */
+    static private DyeColor getNextColor() {
+        ModConfig conf = BlockMeterClient.confmgr.getConfig();
 
-        if (ClientMeasureBox.incrementColor) {
+        final DyeColor selectedColor = DyeColor.byId(conf.colorIndex);
 
-            ++ClientMeasureBox.colorIndex;
+        if (conf.incrementColor) {
+            selectColorIndex(conf.colorIndex + 1);
         }
-        if (ClientMeasureBox.colorIndex >= DyeColor.values().length) {
-            ClientMeasureBox.colorIndex = 0;
 
-        }
         return selectedColor;
     }
 
@@ -264,12 +264,6 @@ public class ClientMeasureBox extends MeasureBox {
 
     void setFinished() {
         this.finished = true;
-    }
-
-    static {
-        ClientMeasureBox.colorIndex = -1;
-        ClientMeasureBox.incrementColor = true;
-        ClientMeasureBox.innerDiagonal = false;
     }
 
     private class Line implements Comparable<Line> {

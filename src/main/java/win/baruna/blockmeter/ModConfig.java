@@ -20,4 +20,6 @@ public class ModConfig implements ConfigData {
     public boolean innerDiagonal = false;
     @ConfigEntry.Gui.Excluded
     public boolean showOtherUsersBoxes = false;
+    @ConfigEntry.Gui.Excluded
+    public int colorIndex = 0;
 }

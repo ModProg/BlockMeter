@@ -5,9 +5,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ fabric_1_16 ]
+    branches: [ fabric_1_16, Testing ]
   pull_request:
-    branches: [ fabric_1_16 ]
+    branches: [ fabric_1_16, Testing ]
 
 jobs:
   build:
@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v2
     - name: Checkout submodules
       uses: textbook/git-checkout-submodule-action@2.1.1
 
@@ -23,7 +24,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 13
-    - uses: eskatos/gradle-command-action@v1
+    - name: Gradle Build
+      uses: eskatos/gradle-command-action@v1
       with:
         gradle-version: current
         arguments: build

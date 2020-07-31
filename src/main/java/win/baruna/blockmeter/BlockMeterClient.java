@@ -8,6 +8,9 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 import io.netty.buffer.Unpooled;
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.ConfigManager;
+import me.sargunvohra.mcmods.autoconfig1u.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -28,6 +31,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -62,35 +66,77 @@ public class BlockMeterClient implements ClientModInitializer {
      */
     private OptionsGui menu;
 
-    /**
-     * Setting to enable other Users Measuring-Boxes
-     */
-    private boolean showOtherUsersBoxes;
+    public static ConfigManager<ModConfig> confmgr;
 
     public BlockMeterClient() {
         active = false;
         boxes = new ArrayList<>();
         menu = new OptionsGui();
         otherUsersBoxes = null;
-        showOtherUsersBoxes = false;
         BlockMeterClient.instance = this;
     }
 
     /**
-     * Clears the created Boxes and disables BlockMeter
+     * Disables BlockMeter
+     */
+    public void disable() {
+        active = false;
+        if (confmgr.getConfig().deleteBoxesOnDisable) {
+            clear();
+        }
+    }
+
+    public void reset() {
+        otherUsersBoxes = null;
+        boxes.clear();
+
+        // Resets Color to always start with white in an other world
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = 0;
+            confmgr.save();
+        }
+    }
+
+    /**
+     * Clears Boxes and sends this information to the server
      */
     public void clear() {
-        active = false;
         boxes.clear();
-        ClientMeasureBox.colorIndex = 0;
+        sendBoxList();
+
+        // Reset the color as all Boxes where deleted
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = 0;
+            confmgr.save();
+        }
+    }
+
+    /**
+     * Removes the last box
+     */
+    public boolean undo() {
+        if (this.boxes.size() == 0)
+            return false;
+
+        this.boxes.remove(this.boxes.size() - 1);
+        sendBoxList();
+
+        ModConfig cfg = confmgr.getConfig();
+        if (cfg.incrementColor) {
+            cfg.colorIndex = Math.floorMod(cfg.colorIndex - 1, DyeColor.values().length);
+            confmgr.save();
+        }
+
+        return true;
     }
 
     /**
      * Gets Triggered when the Player disconnects from the Server
      */
     public void onDisconnected() {
-        otherUsersBoxes = null;
-        clear();
+        reset();
     }
 
     /**
@@ -100,6 +146,20 @@ public class BlockMeterClient implements ClientModInitializer {
         sendBoxList(); // to make the server send other user's boxes
     }
 
+    /**
+     * Returns the currently active box
+     * 
+     * @return currently open box or null if none
+     */
+    public ClientMeasureBox currentBox() {
+        if(boxes.size()>0){
+            final ClientMeasureBox lastBox = boxes.get(boxes.size() - 1);
+            if (!lastBox.isFinished())
+                return lastBox;
+        }
+        return null;
+    }
+
     @Override
     public void onInitializeClient() {
         final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.blockmeter.key");
@@ -107,21 +167,21 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
+        // This is ugly I know, but I did not find something better
+        confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (this.active) {
                     if (Screen.hasShiftDown()) {
-                        if (this.boxes.size() > 0) {
-                            this.boxes.remove(this.boxes.size() - 1);
-                            sendBoxList();
-                        }
-                        e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
+                        if (undo())
+                            e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
+                    } else if (Screen.hasControlDown()) {
+                        clear();
+                        e.player.sendMessage(new TranslatableText("blockmeter.clearall"), true);
                     } else {
-                        this.active = false;
+                        disable();
                         e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                        this.boxes.clear();
-                        sendBoxList();
                     }
                 } else {
                     active = true;
@@ -139,10 +199,10 @@ public class BlockMeterClient implements ClientModInitializer {
                 MinecraftClient.getInstance().openScreen((Screen) this.menu);
             }
 
+            // Updates Selection preview
             if (this.active && this.boxes.size() > 0) {
-                final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
-                if (!lastBox.isFinished()) {
-                    lastBox.color = DyeColor.byId(ClientMeasureBox.colorIndex);
+                final ClientMeasureBox lastBox = currentBox();
+                if (lastBox != null) {
                     final HitResult rayHit = e.player.rayTrace((double) e.interactionManager.getReachDistance(), 1.0f, false);
                     if (rayHit.getType() == HitResult.Type.BLOCK) {
                         final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
@@ -176,7 +236,9 @@ public class BlockMeterClient implements ClientModInitializer {
                 final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
 
                 if (lastBox.isFinished()) {
-                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getDimension().getSuffix());
+                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getDimensionRegistryKey().getValue());
+                    System.out.println(playerEntity.world.getDimensionRegistryKey());
+
                     this.boxes.add(box);
                 } else {
                     lastBox.setBlockEnd(block);
@@ -184,7 +246,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     sendBoxList();
                 }
             } else {
-                final ClientMeasureBox box2 = new ClientMeasureBox(block, playerEntity.world.getDimension().getSuffix());
+                final ClientMeasureBox box2 = new ClientMeasureBox(block, playerEntity.world.getDimensionRegistryKey().getValue());
                 this.boxes.add(box2);
 
             }
@@ -194,6 +256,8 @@ public class BlockMeterClient implements ClientModInitializer {
     }
 
     private void sendBoxList() {
+        if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
+            return;
         PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         passedData.writeInt(boxes.size());
         for (int i = 0; i < boxes.size(); i++) {
@@ -222,27 +286,31 @@ public class BlockMeterClient implements ClientModInitializer {
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        final String currentDimension = client.player.world.getDimension().getSuffix();
+        final Identifier currentDimension = client.player.world.getDimensionRegistryKey().getValue();
+
+        final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
+
         client.textRenderer.draw(stack, "XXX", -100, -100, 0); // MEH! but this seems to be needed to get the first background rectangle
-        if (showOtherUsersBoxes && otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
-            this.otherUsersBoxes.forEach((playerText, boxList) -> {
-                boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
-            });
-            this.boxes.forEach(box -> {
-                if (!box.isFinished())
-                    box.render(camera, stack, currentDimension);
-            });
-        } else if (this.active) {
-            this.boxes.forEach(box -> box.render(camera, stack, currentDimension));
-        }
-    }
+        if (this.active || cfg.showBoxesWhenDisabled)
+            if (cfg.showOtherUsersBoxes) {
+                if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
+                    this.otherUsersBoxes.forEach((playerText, boxList) -> {
+                        boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
+                    });
+                    this.boxes.forEach(box -> {
+                        if (!box.isFinished())
+                            box.render(camera, stack, currentDimension);
+                    });
+                }
+                if (!cfg.sendBoxes)
+                    this.boxes.forEach(box -> {
+                        if (box.isFinished())
+                            box.render(camera, stack, currentDimension, client.player.getDisplayName());
+                        else
+                            box.render(camera, stack, currentDimension);
+                    });
+            } else
+                this.boxes.forEach(box -> box.render(camera, stack, currentDimension));
 
-    public static boolean getShowOtherUsers() {
-        return instance.showOtherUsersBoxes;
-    }
-
-    public static void setShowOtherUsers(boolean b) {
-        instance.showOtherUsersBoxes = b;
-        instance.sendBoxList(); // to trigger a server response to get other people's boxes
     }
 }

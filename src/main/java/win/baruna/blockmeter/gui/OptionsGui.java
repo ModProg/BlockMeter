@@ -16,6 +16,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ClientMeasureBox;
+import win.baruna.blockmeter.ModConfig;
 
 public class OptionsGui extends Screen {
 
@@ -27,31 +28,37 @@ public class OptionsGui extends Screen {
 
     @Override
     protected void init() {
+        ModConfig config = BlockMeterClient.confmgr.getConfig();
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
                 this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
             }
         }
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 10, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepcolor", new Object[] {
-                        new TranslatableText(ClientMeasureBox.incrementColor ? "options.off" : "options.on")
+                        new TranslatableText(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
-                    ClientMeasureBox.incrementColor = !ClientMeasureBox.incrementColor;
-                    MinecraftClient.getInstance().openScreen((Screen) new OptionsGui());
+                    config.incrementColor = !config.incrementColor;
+                    MinecraftClient.getInstance().openScreen((Screen) null);
+                    // Todo find a way to increment to a new Color if a box was created while
+                    // incrementColor was disabled
+                    BlockMeterClient.confmgr.save();
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 32, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
-                    new TranslatableText(ClientMeasureBox.innerDiagonal ? "options.on" : "options.off")
+                        new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
-                    ClientMeasureBox.innerDiagonal = !ClientMeasureBox.innerDiagonal;
+                    config.innerDiagonal = !config.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
+                    BlockMeterClient.confmgr.save();
                 }));
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH/2, this.height / 2 + 54, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showothers", new Object[] {
-                    new TranslatableText( BlockMeterClient.getShowOtherUsers() ? "options.off" : "options.on")
+                        new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
-                    BlockMeterClient.setShowOtherUsers(!BlockMeterClient.getShowOtherUsers());
+                    config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
                     MinecraftClient.getInstance().openScreen((Screen) null);
+                    BlockMeterClient.confmgr.save();
                 }));
     }
 
@@ -77,15 +84,19 @@ public class OptionsGui extends Screen {
         ColorSelectButton(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
             super(x, y, width, height, new LiteralText(string), button -> {
                 ClientMeasureBox.selectColorIndex(colorIndex);
+
+                final ClientMeasureBox currentBox = BlockMeterClient.instance.currentBox();
+                if (currentBox != null)
+                    currentBox.setColor(DyeColor.byId(colorIndex));
                 MinecraftClient.getInstance().openScreen((Screen) null);
             });
             this.selected = false;
-            this.color = DyeColor.values()[colorIndex].getColorComponents();
+            this.color = DyeColor.byId(colorIndex).getColorComponents();
             this.x = x + 2;
             this.y = y + 2;
             this.width = width - 4;
             this.height = height - 4;
-            if (ClientMeasureBox.colorIndex == colorIndex) {
+            if (BlockMeterClient.confmgr.getConfig().colorIndex == colorIndex) {
                 this.setFocused(true);
                 this.selected = true;
             }

@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import win.baruna.blockmeter.BlockMeterClient;
 
@@ -17,8 +18,8 @@ public class ClientPlayerConnectionMixin {
         BlockMeterClient.instance.onConnected();
     }
 
-    @Inject(method = "onDisconnected", at = @At("HEAD"))
-    public void onDisconnectedFromServerEvent(CallbackInfo cbi) {
+    @Inject(method = "onDisconnect", at = @At("HEAD"))
+    public void onDisconnectedFromServerEvent(DisconnectS2CPacket packet, CallbackInfo cbi) {
         BlockMeterClient.instance.onDisconnected();
     }
 }

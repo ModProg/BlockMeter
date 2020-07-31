@@ -50,8 +50,13 @@ processResources {
 }
 
 dependencies {
-    
-    modCompile 'org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT'
+    modCompile ("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
+		// This is to fix the error:
+		// com.google.*:*:* has more than one client module definitions
+		// in gradle > 4
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
 
     minecraft  "com.mojang:minecraft:${Versions['minecraft_version']}"
     mappings   "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"

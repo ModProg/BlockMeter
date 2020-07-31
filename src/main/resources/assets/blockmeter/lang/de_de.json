@@ -1,11 +1,18 @@
 {
     "blockmeter.keepcolor": "Immer aktuelle Farbe: %s",
-    "blockmeter.diagonal": "%s innere diagonale Linie",
+    "blockmeter.diagonal": "Innere diagonale Linie: %s",
     "blockmeter.toggle.on": "%s wird jetzt als Blockmeter verwendet!",
     "blockmeter.toggle.off": "Blockmeter ist abgeschaltet!",
     "blockmeter.clearlast": "Letzte Box gelöscht",
+    "blockmeter.clearall": "Alle Boxen gelöscht",
+    "blockmeter.showothers": "Boxen anderer Spieler anzeigen: %s",
+    
     "category.blockmeter.key": "Blockmeter",
-    "blockmeter.showothers": "Blöcke anderer Spieler anzeigen: %s",
+    
     "key.blockmeter.assign": "Blockmeter an/aus",
-    "key.blockmeter.menu": "Optionen zeigen"
+    "key.blockmeter.menu": "Optionen zeigen",
+    
+    "text.autoconfig.blockmeter.title": "Blockmeter",
+    "text.autoconfig.blockmeter.option.minimalLabelSize": "Minimalgröße für Boxbeschriftungen",
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "Entferne Boxen beim deaktivieren"
 }

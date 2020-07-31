@@ -5,7 +5,8 @@
   "environment": "*",    
   "entrypoints": {
     "client": [ "win.baruna.blockmeter.BlockMeterClient" ],
-    "main": [ "win.baruna.blockmeter.BlockMeterServer" ]
+    "main": [ "win.baruna.blockmeter.BlockMeterServer" ],
+    "modmenu": ["win.baruna.blockmeter.gui.ModMenu"]
   },
   "custom": {
         "xxxmodmenu:clientsideOnly": true,
@@ -28,7 +29,7 @@
   "name": "Block Meter",
   "description": "A simple mod to measure your blocks!",
   "icon": "pack.png",
-  "authors": [ "MadeOke", "Giselbaer" ],
+  "authors": [ "MadeOke", "Giselbaer", "ModProg" ],
 
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric",

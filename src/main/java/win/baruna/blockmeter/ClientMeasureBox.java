@@ -1,10 +1,12 @@
-//   // Decompiled by Procyon v0.5.30
-// 
 package win.baruna.blockmeter;
-import com.mojang.blaze3d.systems.RenderSystem;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
@@ -19,27 +21,24 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 
-public class ClientMeasureBox extends MeasureBox
-{
+public class ClientMeasureBox extends MeasureBox {
     Box box;
-    public static int colorIndex;
-    public static boolean incrementColor;
-    public static boolean innerDiagonal;
-    
+
     private ClientMeasureBox() {
         super();
     }
 
-    ClientMeasureBox(final BlockPos block, final String dimension) {
+    ClientMeasureBox(final BlockPos block, final Identifier dimension) {
         this.blockStart = block;
         this.blockEnd = block;
         this.dimension = dimension;
-        this.color = this.getNextColor();
+        this.color = getNextColor();
         this.finished = false;
         this.setBoundingBox();
     }
@@ -50,14 +49,15 @@ public class ClientMeasureBox extends MeasureBox
         result.setBoundingBox();
         return result;
     }
-    
+
     public void setBlockEnd(BlockPos pos) {
-        blockEnd=pos;
+        blockEnd = pos;
         setBoundingBox();
     }
-    
+
     public static void selectColorIndex(int newColor) {
-        colorIndex=newColor;
+        BlockMeterClient.confmgr.getConfig().colorIndex = Math.floorMod(newColor, DyeColor.values().length);
+        BlockMeterClient.confmgr.save();
     }
 
     private void setBoundingBox() {
@@ -68,31 +68,35 @@ public class ClientMeasureBox extends MeasureBox
         final int by = this.blockEnd.getY();
         final int bz = this.blockEnd.getZ();
 
-        this.box = new Box((double)Math.min(ax, bx), (double)Math.min(ay, by), (double)Math.min(az, bz), (double)(Math.max(ax, bx) + 1), (double)(Math.max(ay, by) + 1), (double)(Math.max(az, bz) + 1));
+        this.box = new Box(
+                (double) Math.min(ax, bx), (double) Math.min(ay, by),
+                (double) Math.min(az, bz), (double) (Math.max(ax, bx) + 1),
+                (double) (Math.max(ay, by) + 1),
+                (double) (Math.max(az, bz) + 1));
 
     }
-    
-    void render(Camera camera, MatrixStack stack, String currentDimension) {
+
+    void render(Camera camera, MatrixStack stack, Identifier currentDimension) {
         render(camera, stack, currentDimension, null);
     }
-    
-    void render(final Camera camera, MatrixStack stack, final String currentDimension, Text playerName) {
+
+    void render(final Camera camera, MatrixStack stack, final Identifier currentDimension, Text playerName) {
         if (!(currentDimension.equals(this.dimension))) {
-            return;          }
+            return;
+        }
         final Vec3d pos = camera.getPos();
 
         RenderSystem.lineWidth(2.0f);
         RenderSystem.disableDepthTest();
         RenderSystem.disableTexture();
         RenderSystem.disableBlend();
-        
+
         stack.push();
         stack.translate(-pos.x, -pos.y, -pos.z);
         Matrix4f model = stack.peek().getModel();
 
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
-
         final float[] color = this.color.getColorComponents();
         final float r = color[0];
         final float g = color[1];
@@ -101,34 +105,34 @@ public class ClientMeasureBox extends MeasureBox
 
         buffer.begin(3, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.maxZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
 
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.minZ).color(r, g, b, a).next();
-        buffer.vertex(model, (float)this.box.maxX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a).next();
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
         tess.draw();
 
-        if (ClientMeasureBox.innerDiagonal) {
+        if (BlockMeterClient.confmgr.getConfig().innerDiagonal) {
             buffer.begin(1, VertexFormats.POSITION_COLOR);
-            buffer.vertex(model, (float)this.box.minX, (float)this.box.minY, (float)this.box.minZ).color(r, g, b, a).next();
-            buffer.vertex(model, (float)this.box.maxX, (float)this.box.maxY, (float)this.box.maxZ).color(r, g, b, a).next();
+            buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a).next();
+            buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a).next();
             tess.draw();
 
         }
@@ -141,15 +145,14 @@ public class ClientMeasureBox extends MeasureBox
         RenderSystem.enableDepthTest();
         stack.pop();
     }
-    
+
     private void drawLengths(final Camera camera, MatrixStack stack, final Text playerName) {
-        final int lengthX = (int)this.box.getXLength();
-        final int lengthY = (int)this.box.getYLength();
-        final int lengthZ = (int)this.box.getZLength();
+        final int lengthX = (int) this.box.getXLength();
+        final int lengthY = (int) this.box.getYLength();
+        final int lengthZ = (int) this.box.getZLength();
 
         final Vec3d boxCenter = this.box.getCenter();
         final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ).distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
-
 
         final float yaw = camera.getYaw();
         final float pitch = camera.getPitch();
@@ -182,28 +185,36 @@ public class ClientMeasureBox extends MeasureBox
         Collections.sort(lines);
         final Vec3d lineX = lines.get(0).line.getCenter();
 
-        String playerNameStr = (playerName == null ? "" : playerName.getString()+" : ");
-        if (ClientMeasureBox.innerDiagonal) {
-            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch, playerNameStr+String.format("%.2f", diagonalLength));
+        String playerNameStr = (playerName == null ? "" : playerName.getString() + " : ");
+        if (BlockMeterClient.confmgr.getConfig().innerDiagonal) {
+            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch, playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr+String.valueOf(lengthX));
-        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr+String.valueOf(lengthY));
-        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr+String.valueOf(lengthZ));
+        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX), pos);
+        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + String.valueOf(lengthY), pos);
+        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ), pos);
     }
-    
-    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String length) {
+
+    private void drawText(MatrixStack stack, final double x, final double y, final double z, final float yaw, final float pitch, final String text, final Vec3d playerPos) {
+        @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-        final LiteralText lengthString = new LiteralText(length);
+        final LiteralText literalText = new LiteralText(text);
 
-        final float size = 0.03f;
+        float size = 0.03f;
+        final int constDist = 10;
+
+        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
+            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x) + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
+            if (dist > constDist)
+                size = dist * size / constDist;
+        }
 
         stack.push();
         stack.translate(x, y + 0.15, z);
         stack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
         stack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch));
         stack.scale(size, -size, 0.001f);
-        int width = textRenderer.getWidth(lengthString);
+        int width = textRenderer.getWidth(literalText);
         stack.translate((-width / 2), 0.0, 0.0);
         Matrix4f model = stack.peek().getModel();
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
@@ -217,7 +228,7 @@ public class ClientMeasureBox extends MeasureBox
         Tessellator.getInstance().draw();
 
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(buffer);
-        textRenderer.draw(lengthString, 0.0f, 0.0f, 
+        textRenderer.draw(literalText, 0.0f, 0.0f,
                 this.color.getSignColor(),
                 false,                              // shadow
                 model,                              // matrix
@@ -230,41 +241,42 @@ public class ClientMeasureBox extends MeasureBox
 
         stack.pop();
     }
-    
-    private DyeColor getNextColor() {
-        final DyeColor selectedColor = DyeColor.byId(ClientMeasureBox.colorIndex);
 
-        if (ClientMeasureBox.incrementColor) {
+    /**
+     * If enabled increments to next color
+     * @return currently selected Color
+     */
+    static private DyeColor getNextColor() {
+        ModConfig conf = BlockMeterClient.confmgr.getConfig();
 
-            ++ClientMeasureBox.colorIndex;
+        final DyeColor selectedColor = DyeColor.byId(conf.colorIndex);
+
+        if (conf.incrementColor) {
+            selectColorIndex(conf.colorIndex + 1);
         }
-        if (ClientMeasureBox.colorIndex >= DyeColor.values().length) {
-            ClientMeasureBox.colorIndex = 0;
 
-        }
         return selectedColor;
     }
-    
+
     boolean isFinished() {
         return this.finished;
     }
-    
+
     void setFinished() {
         this.finished = true;
-    }      static {          ClientMeasureBox.colorIndex = -1;          ClientMeasureBox.incrementColor = true;
-        ClientMeasureBox.innerDiagonal = false;
     }
 
-    private class Line implements Comparable<Line>
-    {
+    private class Line implements Comparable<Line> {
         Box line;
         boolean isVisible;
         double distance;
+
         Line(final Box line, final Vec3d pos, final Frustum frustum) {
             this.line = line;
             this.isVisible = frustum.isVisible(line);
             this.distance = line.getCenter().distanceTo(pos);
         }
+
         @Override
         public int compareTo(final Line l) {
             if (this.isVisible) {
@@ -276,7 +288,15 @@ public class ClientMeasureBox extends MeasureBox
 
     private class Frustum {
         Frustum(Matrix4f a, Matrix4f b) {}
+
         void setPosition(double a, double b, double c) {}
-        boolean isVisible(Box line) { return true; }
+
+        boolean isVisible(Box line) {
+            return true;
+        }
+    }
+
+    public void setColor(DyeColor color) {
+        this.color = color;
     }
 }

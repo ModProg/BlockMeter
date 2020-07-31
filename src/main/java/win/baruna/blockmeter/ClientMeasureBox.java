@@ -235,7 +235,7 @@ public class ClientMeasureBox extends MeasureBox {
                 immediate,                          // draw buffer
                 true,                               // seeThrough
                 0,                                  // backgroundColor => underlineColor,
-                0                                  // light
+                0                                   // light
         );
         immediate.draw();
 

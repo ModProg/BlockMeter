@@ -12,6 +12,8 @@ public class MeasureBox {
     Identifier dimension;
     DyeColor color;
     boolean finished;
+    int mode;
+    int orientation;
 
     MeasureBox() {};
 
@@ -21,6 +23,8 @@ public class MeasureBox {
         buf.writeIdentifier(dimension);
         buf.writeInt(color.getId());
         buf.writeBoolean(finished);
+        buf.writeInt(mode);
+        buf.writeInt(orientation);
     }
 
     public static MeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {
@@ -35,6 +39,8 @@ public class MeasureBox {
         dimension = attachedData.readIdentifier();
         color = DyeColor.byId(attachedData.readInt());
         finished = attachedData.readBoolean();
+        mode = attachedData.readInt();
+        orientation = attachedData.readInt();
 
         if (Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
                 || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024

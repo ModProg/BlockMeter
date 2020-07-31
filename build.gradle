@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "0.4-SNAPSHOT"
+    id 'fabric-loom' version '0.4-SNAPSHOT'
 }
 
 repositories {
@@ -14,7 +14,7 @@ repositories {
     }
     
     maven {
-        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
     }
     
     maven {
@@ -50,13 +50,8 @@ processResources {
 }
 
 dependencies {
-    modCompile ("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
-        // This is to fix the error:
-        // com.google.*:*:* has more than one client module definitions
-        // in gradle > 4
-        exclude group: "com.google.guava", module: "guava"
-        exclude group: "com.google.code.gson", module: "gson"
-    }
+    
+    modCompile  'org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT'
 
     minecraft   "com.mojang:minecraft:${Versions['minecraft_version']}"
     mappings    "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
@@ -75,7 +70,7 @@ dependencies {
 // if it is present.
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
+    classifier = 'sources'
     from sourceSets.main.allSource
 }
 

@@ -1,11 +1,11 @@
 {
     "blockmeter.keepcolor": "Immer aktuelle Farbe: %s",
-    "blockmeter.diagonal": "%s innere diagonale Linie",
+    "blockmeter.diagonal": "Innere diagonale Linie: %s",
     "blockmeter.toggle.on": "%s wird jetzt als Blockmeter verwendet!",
     "blockmeter.toggle.off": "Blockmeter ist abgeschaltet!",
     "blockmeter.clearlast": "Letzte Box gelöscht",
     "category.blockmeter.key": "Blockmeter",
-    "blockmeter.showothers": "Blöcke anderer Spieler anzeigen: %s",
+    "blockmeter.showothers": "Boxen anderer Spieler anzeigen: %s",
     "key.blockmeter.assign": "Blockmeter an/aus",
     "key.blockmeter.menu": "Optionen zeigen"
 }

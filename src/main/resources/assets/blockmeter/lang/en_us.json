@@ -1,11 +1,11 @@
 {
     "blockmeter.keepcolor": "Always Use Current Color: %s",
-    "blockmeter.diagonal": "%s Inner Diagonal Line",
+    "blockmeter.diagonal": "Inner Diagonal Line: %s",
     "blockmeter.toggle.on": "%s is now used as your block meter!",
-    "blockmeter.toggle.off": "Block meter is now turned off!",
+    "blockmeter.toggle.off": "Block Meter is now turned off!",
     "blockmeter.clearlast": "Last box cleared",
     "category.blockmeter.key": "Block Meter",
-    "blockmeter.showothers": "Show other user's blocks: %s",
+    "blockmeter.showothers": "Show other user's boxses: %s",
     "key.blockmeter.assign": "Toggle Block Meter",
     "key.blockmeter.menu": "Show Options"
 }

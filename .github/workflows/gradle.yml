@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 11, 14]
+        java: [ 8, 11, 13]
         gradle: [ 4.10.2, 5.6.4, 6.5.1]
     
     name: Java ${{ matrix.java }}, Gradle ${{ matrix.gradle }}

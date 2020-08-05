@@ -5,9 +5,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ fabric_1_16, Testing ]
+    branches: [ fabric_1_16 ]
   pull_request:
-    branches: [ fabric_1_16, Testing ]
+    branches: [ fabric_1_16 ]
 
 jobs:
   build:

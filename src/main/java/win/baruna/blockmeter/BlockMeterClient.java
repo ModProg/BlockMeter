@@ -167,7 +167,7 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
-        // This is ugly I know, but I did not find something better
+        // This is ugly I know, but I did not find something better (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13 )
         confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {

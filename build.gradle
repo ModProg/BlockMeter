@@ -25,11 +25,15 @@ repositories {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+ext.Version = new Properties()
+Version.load(file("version.properties").newReader())
+
+ext.projectVersion = Version['modVersion']
+
 ext.Versions = new Properties()
-Versions.load(file("Versionfiles/mcversion-1.16.2-pre1.properties").newReader())
+Versions.load(file("Versionfiles/mcversion-${Version['minecraftVersion']}.properties").newReader())
 
 archivesBaseName = "blockmeter"
-ext.projectVersion = "1.5-beta"
 
 version = "${Versions['minecraft_version']}-fabric${Versions['fabric_versiononly']}-${project.projectVersion}"
 

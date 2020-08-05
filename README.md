@@ -1,14 +1,14 @@
 ![Java CI with Gradle](https://github.com/ModProg/BlockMeter/workflows/Java%20CI%20with%20Gradle/badge.svg)
-# BlockMeter
-This is the public repository for the Block Meter a Fabric Mod to measure Boxes in Minecraft.
 
-This Fork includes my custom extensions like Settings, and some fixes for e.g. multiplayer.
+# BlockMeter
+
+This is the public repository for the Block Meter a Fabric Mod to measure Boxes in Minecraft.
 
 # Compile
 
 - Get a version of gradle that's at least 4.10.2
 - `git clone <repo>`
-- `git branch -r`  to see available branches
+- `git branch -r` to see available branches
 - `git checkout fabric_1_16` to select your branch
 - `git submodule init`
 - `git submodule update`
@@ -22,7 +22,14 @@ In particular, I don't want the gradle files to be duplicated into every single 
 
 ## Prerequisites
 
-You need a gradle installation which does not come with the mod. At the time of this writing, the version of gradle used is 4.10.2. Gradle 6.5 has been tested to work too, so versions between those *should* as well.
+### These Versions should work (are used in GitHub CI)
+
+| Software       | Version              |
+| -------------- | -------------------- |
+| Java (OpenJDK) | 8, 11                |
+| Gradle         | 4.10.2, 5.6.4, 6.5.1 |
+
+You need a gradle installation which does not come with the mod. At the time of this writing, the version of gradle used is 4.10.2. Gradle 6.5 has been tested to work too, so versions between those _should_ as well.
 
 You might already have gradle installed, especially when you're running Linux - if so, make sure it's new enough. For example, Ubuntu 18.04 has gradle 4.4.1 which is not. Run `gradle -version` to check.
 
@@ -35,4 +42,3 @@ All my mods use the same repository of files that match MineCraft, Fabric, and c
 ## Compiling the mod
 
 There are branches for the various versions of MineCraft that are supported by the mod. Run `git branch -r` to see which branches there are, then `git checkout branchname` without the `origin/` part, for example, `git checkout fabric_1_16`.
-

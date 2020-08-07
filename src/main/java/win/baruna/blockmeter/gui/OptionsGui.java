@@ -15,8 +15,8 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.BlockMeterClient;
-import win.baruna.blockmeter.ClientMeasureBox;
 import win.baruna.blockmeter.ModConfig;
+import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class OptionsGui extends Screen {
 
@@ -24,16 +24,19 @@ public class OptionsGui extends Screen {
         super(NarratorManager.EMPTY);
     }
 
-    final static int BUTTONWIDTH = 200;
+    private final static int BUTTONWIDTH = 200;
 
     @Override
     protected void init() {
-        ModConfig config = BlockMeterClient.confmgr.getConfig();
+        ModConfig config = BlockMeterClient.getConfigManager().getConfig();
+
+        // Create Color Selector
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
                 this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
             }
         }
+
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepcolor", new Object[] {
                         new TranslatableText(config.incrementColor ? "options.off" : "options.on")
@@ -42,23 +45,25 @@ public class OptionsGui extends Screen {
                     MinecraftClient.getInstance().openScreen((Screen) null);
                     // Todo find a way to increment to a new Color if a box was created while
                     // incrementColor was disabled
-                    BlockMeterClient.confmgr.save();
+                    BlockMeterClient.getConfigManager().save();
                 }));
+
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
                         new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
                     config.innerDiagonal = !config.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
-                    BlockMeterClient.confmgr.save();
+                    BlockMeterClient.getConfigManager().save();
                 }));
+                
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showothers", new Object[] {
                         new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
                     config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
                     MinecraftClient.getInstance().openScreen((Screen) null);
-                    BlockMeterClient.confmgr.save();
+                    BlockMeterClient.getConfigManager().save();
                 }));
     }
 
@@ -83,9 +88,9 @@ public class OptionsGui extends Screen {
 
         ColorSelectButton(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
             super(x, y, width, height, new LiteralText(string), button -> {
-                ClientMeasureBox.selectColorIndex(colorIndex);
+                ClientMeasureBox.setColorIndex(colorIndex);
 
-                final ClientMeasureBox currentBox = BlockMeterClient.instance.currentBox();
+                final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
                 if (currentBox != null)
                     currentBox.setColor(DyeColor.byId(colorIndex));
                 MinecraftClient.getInstance().openScreen((Screen) null);
@@ -96,7 +101,7 @@ public class OptionsGui extends Screen {
             this.y = y + 2;
             this.width = width - 4;
             this.height = height - 4;
-            if (BlockMeterClient.confmgr.getConfig().colorIndex == colorIndex) {
+            if (BlockMeterClient.getConfigManager().getConfig().colorIndex == colorIndex) {
                 this.setFocused(true);
                 this.selected = true;
             }

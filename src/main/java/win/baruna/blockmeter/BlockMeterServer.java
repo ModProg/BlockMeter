@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import win.baruna.blockmeter.measurebox.MeasureBox;
 
 public class BlockMeterServer implements ModInitializer {
 

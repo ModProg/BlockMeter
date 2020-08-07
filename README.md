@@ -1,4 +1,4 @@
-![Java CI with Gradle](https://github.com/ModProg/BlockMeter/workflows/Java%20CI%20with%20Gradle/badge.svg)
+![Java CI with Gradle](https://github.com/ModProg/BlockMeter/workflows/Java%20CI%20with%20Gradle/badge.svg) [![](http://cf.way2muchnoise.eu/full_blockmeterfabric_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric)
 
 # BlockMeter
 

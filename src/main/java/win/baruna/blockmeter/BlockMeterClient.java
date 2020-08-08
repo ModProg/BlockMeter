@@ -39,6 +39,9 @@ import win.baruna.blockmeter.gui.OptionsGui;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class BlockMeterClient implements ClientModInitializer {
+    /**
+     * Currently running Instance of BlockMeterClient
+     */
     private static BlockMeterClient instance;
 
     /**
@@ -50,6 +53,9 @@ public class BlockMeterClient implements ClientModInitializer {
         return instance;
     }
 
+    /**
+     * ConfigManager of BlockMeter
+     */
     private static ConfigManager<ModConfig> confmgr;
 
     /**
@@ -105,6 +111,9 @@ public class BlockMeterClient implements ClientModInitializer {
         }
     }
 
+    /**
+     * Resets Blockmeter to be used in an other World
+     */
     public void reset() {
         otherUsersBoxes = null;
         boxes.clear();
@@ -151,6 +160,7 @@ public class BlockMeterClient implements ClientModInitializer {
         return true;
     }
 
+    
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
@@ -218,7 +228,7 @@ public class BlockMeterClient implements ClientModInitializer {
         // This is ugly I know, but I did not find something better
         // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13 )
         confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-        ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
+        ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (this.active) {
@@ -305,10 +315,18 @@ public class BlockMeterClient implements ClientModInitializer {
         return ActionResult.PASS;
     }
 
+    /**
+     * Finds a box to be edited when selecting this block
+     * @param block selected block
+     * @return Box to be edited
+     */
     private ClientMeasureBox findBox(BlockPos block) {
         return boxes.stream().filter(box -> box.isCorner(block)).findAny().orElse(null);
     }
 
+    /**
+     * Sends BoxList to Server if enabled in the config
+     */
     private void sendBoxList() {
         if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
             return;
@@ -320,7 +338,12 @@ public class BlockMeterClient implements ClientModInitializer {
         ClientSidePacketRegistry.INSTANCE.sendToServer(BlockMeter.C2SPacketIdentifier, passedData);
     }
 
-    private void receiveBoxList(PacketContext context, PacketByteBuf data) {
+    /**
+     * handles the BoxList of other Players
+     * @param context
+     * @param data
+     */
+    private void handleServerBoxList(PacketContext context, PacketByteBuf data) {
         Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
         int playerCount = data.readInt();
         for (int i = 0; i < playerCount; i++) {

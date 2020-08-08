@@ -35,6 +35,11 @@ public class BlockMeterServer implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
     }
 
+    /**
+     * Removes a player from the BoxMap
+     * 
+     * @param player Player to be removed
+     */
     public static void removePlayer(ServerPlayerEntity player) {
         if (instance != null) {
             if (instance.playerBoxes.containsKey(player.getUuid())) {
@@ -44,10 +49,21 @@ public class BlockMeterServer implements ModInitializer {
         }
     }
 
+    /**
+     * Handles ServerStart
+     * 
+     * @param server
+     */
     private void onStartServer(MinecraftServer server) {
         this.server = server;
     }
 
+    /**
+     * Processes a ClientPacket
+     * 
+     * @param packetContext
+     * @param attachedData
+     */
     private void processClientPacket(PacketContext packetContext, PacketByteBuf attachedData) {
         int size = attachedData.readInt();
 
@@ -68,6 +84,9 @@ public class BlockMeterServer implements ModInitializer {
         packetContext.getTaskQueue().execute(() -> informAllPlayers());
     }
 
+    /**
+     * Informs all Players about the current boxList
+     */
     private void informAllPlayers() {
         PacketByteBuf data = buildS2CPacket();
         for (ServerPlayerEntity player: server.getPlayerManager().getPlayerList()) {
@@ -75,6 +94,10 @@ public class BlockMeterServer implements ModInitializer {
         }
     }
 
+    /**
+     * Builds a S2CPacket containing the BoxList
+     * @return S2CPacket containing the BoxList
+     */
     private PacketByteBuf buildS2CPacket() {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         synchronized (playerBoxes) {

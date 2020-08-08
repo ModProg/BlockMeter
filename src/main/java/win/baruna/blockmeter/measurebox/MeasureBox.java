@@ -15,6 +15,11 @@ public class MeasureBox {
     protected int mode;
     protected int orientation;
 
+    /**
+     * Fills a PacketByteBuf with the MeasureBox
+     * 
+     * @param buf PacketByteBuf to fill
+     */
     public void writePacketBuf(PacketByteBuf buf) {
         buf.writeBlockPos(this.blockStart);
         buf.writeBlockPos(this.blockEnd);
@@ -25,12 +30,23 @@ public class MeasureBox {
         buf.writeInt(orientation);
     }
 
+    /**
+     * Parses a MeasureBox from a PacketByteBuf
+     * 
+     * @param attachedData a PacketByteBuf containing the ClientMeasureBox
+     * @return the PacketByteBuf submitted
+     */
     public static MeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {
         MeasureBox result = new MeasureBox();
         result.fillFromPacketByteBuf(attachedData);
         return result;
     }
 
+    /**
+     * Sets the fields of the MeasureBox from a PacketByteBuf
+     * 
+     * @param attachedData data to fill from
+     */
     protected void fillFromPacketByteBuf(PacketByteBuf attachedData) {
         blockStart = attachedData.readBlockPos();
         blockEnd = attachedData.readBlockPos();

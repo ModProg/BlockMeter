@@ -237,8 +237,8 @@ public class BlockMeterClient implements ClientModInitializer {
                 final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
 
                 if (lastBox.isFinished()) {
-                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getDimensionRegistryKey().getValue());
-                    System.out.println(playerEntity.world.getDimensionRegistryKey());
+                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getRegistryKey().getValue());
+                    System.out.println(playerEntity.world.getRegistryKey());
 
                     this.boxes.add(box);
                 } else {
@@ -247,7 +247,8 @@ public class BlockMeterClient implements ClientModInitializer {
                     sendBoxList();
                 }
             } else {
-                final ClientMeasureBox box2 = new ClientMeasureBox(block, playerEntity.world.getDimensionRegistryKey().getValue());
+                final ClientMeasureBox box2 = new ClientMeasureBox(block,
+                        playerEntity.world.getRegistryKey().getValue());
                 this.boxes.add(box2);
 
             }
@@ -287,7 +288,7 @@ public class BlockMeterClient implements ClientModInitializer {
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        final Identifier currentDimension = client.player.world.getDimensionRegistryKey().getValue();
+        final Identifier currentDimension = client.player.world.getRegistryKey().getValue();
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 

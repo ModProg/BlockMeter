@@ -13,3 +13,4 @@ run/
 # VS Code
 .code/
 .vscode/
+logs/latest.log

@@ -164,7 +164,7 @@ public class BlockMeterClient implements ClientModInitializer {
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        final Identifier currentDimension = client.player.world.getDimensionRegistryKey().getValue();
+        final Identifier currentDimension = client.player.world.getRegistryKey().getValue();
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
@@ -301,7 +301,7 @@ public class BlockMeterClient implements ClientModInitializer {
                         currentBox.loosenCorner(block);
                 } else {
                     final ClientMeasureBox box = new ClientMeasureBox(block,
-                            playerEntity.world.getDimensionRegistryKey().getValue());
+                            playerEntity.world.getRegistryKey().getValue());
                     this.boxes.add(box);
                 }
             } else {

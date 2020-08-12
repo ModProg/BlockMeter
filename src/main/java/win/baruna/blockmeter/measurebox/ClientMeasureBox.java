@@ -31,9 +31,14 @@ import win.baruna.blockmeter.ModConfig;
 public class ClientMeasureBox extends MeasureBox {
     private Box box;
 
-    private ClientMeasureBox() {
-    }
+    private ClientMeasureBox() {}
 
+    /**
+     * Creates a new ClientMeasureBox
+     * 
+     * @param block     both, the Start and End position of the MeasureBox
+     * @param dimension Dimension of the MeasureBox
+     */
     public ClientMeasureBox(final BlockPos block, final Identifier dimension) {
         this.blockStart = block;
         this.blockEnd = block;
@@ -47,6 +52,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Sets the second box corner
+     * 
      * @param block second corner position
      */
     public void setBlockEnd(final BlockPos block) {
@@ -64,16 +70,16 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     /**
-     * Markes Box to be
+     * Markes Box to be complete
      */
     public void setFinished() {
         this.finished = true;
     }
 
     /**
-     * Set the Color of the MeasureBox
+     * Sets the Color of the MeasureBox
      * 
-     * @param color Color to be set
+     * @param color Color to be applied
      */
     public void setColor(final DyeColor color) {
         this.color = color;
@@ -82,23 +88,24 @@ public class ClientMeasureBox extends MeasureBox {
     /**
      * Renders the Box
      * 
-     * @param camera
+     * @param camera           rendering Camera
      * @param stack
-     * @param currentDimension
+     * @param currentDimension Dimension the Player currently is in
      */
     public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension) {
         render(camera, stack, currentDimension, null);
     }
 
     /**
+     * Renders the Box
      * 
-     * @param camera
+     * @param camera           rendering Camera
      * @param stack
-     * @param currentDimension
-     * @param playerName
+     * @param currentDimension Dimension the Player currently is in
+     * @param boxCreatorName   Name of the Player that created the Box
      */
     public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension,
-            final Text playerName) {
+            final Text boxCreatorName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }
@@ -176,7 +183,7 @@ public class ClientMeasureBox extends MeasureBox {
         RenderSystem.enableTexture();
         RenderSystem.lineWidth(1.0f);
 
-        this.drawLengths(camera, stack, playerName);
+        this.drawLengths(camera, stack, boxCreatorName);
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
@@ -229,11 +236,11 @@ public class ClientMeasureBox extends MeasureBox {
     /**
      * Draws the length label
      * 
-     * @param camera
+     * @param camera rendering Camera
      * @param stack
-     * @param playerName
+     * @param boxCreatorName Name of the Box creator
      */
-    private void drawLengths(final Camera camera, final MatrixStack stack, final Text playerName) {
+    private void drawLengths(final Camera camera, final MatrixStack stack, final Text boxCreatorName) {
         final int lengthX = (int) this.box.getXLength();
         final int lengthY = (int) this.box.getYLength();
         final int lengthZ = (int) this.box.getZLength();
@@ -294,7 +301,7 @@ public class ClientMeasureBox extends MeasureBox {
         Collections.sort(lines);
         final Vec3d lineX = lines.get(0).line.getCenter();
 
-        String playerNameStr = (playerName == null ? "" : playerName.getString() + " : ");
+        String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName.getString() + " : ");
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
             this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch,
                     playerNameStr + String.format("%.2f", diagonalLength), pos);
@@ -391,7 +398,7 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     /**
-     * Returns a ClientMeasureBox from a PacketByteBuf
+     * Parses a ClientMeasureBox from a PacketByteBuf
      * 
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted

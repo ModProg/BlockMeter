@@ -43,7 +43,7 @@ minecraft {
 
 processResources {
     inputs.property "version", project.version
-
+    
     from(sourceSets.main.resources.srcDirs) {
         include "fabric.mod.json"
         expand "version": project.version
@@ -73,6 +73,11 @@ dependencies {
 
     include     "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
     include     "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
+
+    testImplementation("org.assertj:assertj-core:3.16.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 }
 
 // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -85,4 +90,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
     from "LICENSE"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

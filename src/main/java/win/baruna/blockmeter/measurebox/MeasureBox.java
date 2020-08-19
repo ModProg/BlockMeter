@@ -15,10 +15,68 @@ public class MeasureBox {
     protected int mode;
     protected int orientation;
 
+    public BlockPos getBlockStart() {
+        return blockStart;
+    }
+
+    public BlockPos getBlockEnd() {
+        return blockEnd;
+    }
+
+    public Identifier getDimension() {
+        return dimension;
+    }
+
+    public DyeColor getColor() {
+        return color;
+    }
+    
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public MeasureBox(BlockPos blockStart, BlockPos blockEnd,
+            Identifier dimension, DyeColor color, boolean finished, int mode,
+            int orientation) {
+        this.blockStart = blockStart;
+        this.blockEnd = blockEnd;
+        this.dimension = dimension;
+        this.color = color;
+        this.finished = finished;
+        this.mode = mode;
+        this.orientation = orientation;
+    }
+
+    /**
+     * Creates a MeasureBox from a PacketByteBuf
+     * 
+     * @param attachedData
+     *            a PacketByteBuf containing the ClientMeasureBox
+     * @return the PacketByteBuf submitted
+     */
+    protected MeasureBox(PacketByteBuf attachedData) {
+        this.blockStart = attachedData.readBlockPos();
+        this.blockEnd = attachedData.readBlockPos();
+        this.dimension = attachedData.readIdentifier();
+        this.color = DyeColor.byId(attachedData.readInt());
+        this.finished = attachedData.readBoolean();
+        this.mode = attachedData.readInt();
+        this.orientation = attachedData.readInt();
+
+        if (Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
+                || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024
+                || blockStart.getY() < 0 || blockStart.getY() > 256
+                || blockEnd.getY() < 0 || blockEnd.getY() > 256
+                || dimension == null) {
+            throw new IllegalArgumentException("invalid buffer");
+        }
+    }
+
     /**
      * Fills a PacketByteBuf with the MeasureBox
      * 
-     * @param buf PacketByteBuf to fill
+     * @param buf
+     *            PacketByteBuf to fill
      */
     public void writePacketBuf(PacketByteBuf buf) {
         buf.writeBlockPos(this.blockStart);
@@ -33,35 +91,11 @@ public class MeasureBox {
     /**
      * Parses a MeasureBox from a PacketByteBuf
      * 
-     * @param attachedData a PacketByteBuf containing the ClientMeasureBox
+     * @param attachedData
+     *            a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
     public static MeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {
-        MeasureBox result = new MeasureBox();
-        result.fillFromPacketByteBuf(attachedData);
-        return result;
-    }
-
-    /**
-     * Sets the fields of the MeasureBox from a PacketByteBuf
-     * 
-     * @param attachedData data to fill from
-     */
-    protected void fillFromPacketByteBuf(PacketByteBuf attachedData) {
-        blockStart = attachedData.readBlockPos();
-        blockEnd = attachedData.readBlockPos();
-        dimension = attachedData.readIdentifier();
-        color = DyeColor.byId(attachedData.readInt());
-        finished = attachedData.readBoolean();
-        mode = attachedData.readInt();
-        orientation = attachedData.readInt();
-
-        if (Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
-                || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024
-                || blockStart.getY() < 0 || blockStart.getY() > 256
-                || blockEnd.getY() < 0 || blockEnd.getY() > 256
-                || dimension == null) {
-            throw new IllegalArgumentException("invalid buffer");
-        }
+        return new MeasureBox(attachedData);
     }
 }

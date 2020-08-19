@@ -25,7 +25,8 @@ public class ClientMeasureBoxTest {
         expectedBuf.writeInt(data.mode);
         expectedBuf.writeInt(data.orientation);
 
-        final ClientMeasureBox mb = ClientMeasureBox.fromPacketByteBuf(expectedBuf);
+        final ClientMeasureBox mb = ClientMeasureBox
+                .fromPacketByteBuf(expectedBuf);
         final PacketByteBuf actualBuf = new PacketByteBuf(Unpooled.buffer());
         mb.writePacketBuf(actualBuf);
 
@@ -34,13 +35,28 @@ public class ClientMeasureBoxTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "1|2|0, 0|0|0, overworld, red, finished," + "1|2|0, 0|0|0, overworld, red, finished" })
-    void testConstructor(@CsvToMBD final MeasureBoxData data1, @CsvToMBD final MeasureBoxData data2) {
-        // final ClientMeasureBox cmb1 = new ClientMeasureBox(data1.bp1,
-        // data1.dimension);
-        // final ClientMeasureBox cmb2 = new ClientMeasureBox(data1.bp1,
-        // data1.dimension);
+    @CsvSource({ "true" })
+    void testGetMeasureBox(final boolean incrementColor,
+            final boolean incrementColor2) {
+        // try (MockedStatic<BlockMeterClient> client = Mockito
+        // .mockStatic(BlockMeterClient.class)) {
+
+        // final ConfigManager<ModConfig> configHolder = Mockito
+        // .mock(ConfigManager.class);
+        // when(configHolder.getConfig()).thenReturn(new ModConfig());
+
+        // client.when(BlockMeterClient::getConfigManager)
+        // .thenReturn(configHolder);
+
+        // configHolder.getConfig().colorIndex = data.color.getId();
+        // configHolder.getConfig().incrementColor = incrementColor;
+
+        // final ClientMeasureBox box = ClientMeasureBox.getBox(data.bp1,
+        // data.dimension);
+
+        // assert(box.getBlockStart()).equals(data.bp1);
+        // }
 
     }
-
 }
+

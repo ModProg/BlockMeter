@@ -75,9 +75,9 @@ dependencies {
     include     "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
 
     // Testing
-    testImplementation "org.junit.jupiter:junit-jupiter:5.+"
-    testImplementation "org.assertj:assertj-core:3.+"
-    testImplementation "org.mockito:mockito-inline:3.+"
+    testImplementation  "org.junit.jupiter:junit-jupiter:5.+"
+    testImplementation  "org.assertj:assertj-core:3.+"
+    testImplementation  "org.mockito:mockito-inline:3.+"
 }
 
 // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task

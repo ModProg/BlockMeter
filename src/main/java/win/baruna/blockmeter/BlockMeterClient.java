@@ -300,7 +300,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     if (currentBox != null)
                         currentBox.loosenCorner(block);
                 } else {
-                    final ClientMeasureBox box = new ClientMeasureBox(block,
+                    final ClientMeasureBox box = ClientMeasureBox.getBox(block,
                             playerEntity.world.getRegistryKey().getValue());
                     this.boxes.add(box);
                 }

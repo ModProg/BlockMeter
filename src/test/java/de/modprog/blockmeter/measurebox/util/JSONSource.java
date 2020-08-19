@@ -5,11 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.jupiter.params.aggregator.AggregateWith;
-
+import org.junit.jupiter.params.provider.ArgumentsSource;
+ 
+@Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@AggregateWith(MBDAggregator.class)
-public @interface CsvToMBD {
-    
+@ArgumentsSource(JSONProvider.class)
+public @interface JSONSource {
+
+     String[] jsons();
+     Class[] classes();
 }

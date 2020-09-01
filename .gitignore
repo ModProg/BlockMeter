@@ -1,6 +1,7 @@
 .gradle/
 build/
 bin/
+logs
 
 # Java Settings
 .project

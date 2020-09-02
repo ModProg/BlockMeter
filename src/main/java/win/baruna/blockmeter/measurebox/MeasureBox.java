@@ -30,12 +30,12 @@ public class MeasureBox {
     public DyeColor getColor() {
         return color;
     }
-    
+
     public boolean isFinished() {
         return finished;
     }
 
-    public MeasureBox(BlockPos blockStart, BlockPos blockEnd,
+    protected MeasureBox(BlockPos blockStart, BlockPos blockEnd,
             Identifier dimension, DyeColor color, boolean finished, int mode,
             int orientation) {
         this.blockStart = blockStart;
@@ -63,9 +63,10 @@ public class MeasureBox {
         this.mode = attachedData.readInt();
         this.orientation = attachedData.readInt();
 
-        if (Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
-                || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024
-                || blockStart.getY() < 0 || blockStart.getY() > 256
+        // TODO enforce these when creating a box
+        // Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
+        // || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024 ||
+        if (blockStart.getY() < 0 || blockStart.getY() > 256
                 || blockEnd.getY() < 0 || blockEnd.getY() > 256
                 || dimension == null) {
             throw new IllegalArgumentException("invalid buffer");

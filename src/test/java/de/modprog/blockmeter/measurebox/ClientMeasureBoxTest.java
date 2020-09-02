@@ -5,25 +5,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import de.modprog.blockmeter.measurebox.util.CsvToMBD;
-import de.modprog.blockmeter.measurebox.util.MeasureBoxData;
+import de.modprog.blockmeter.measurebox.util.JSONSource;
+import de.modprog.blockmeter.measurebox.util.parser.ParseBlockPos;
+import de.modprog.blockmeter.measurebox.util.parser.ParseDyeColor;
+import de.modprog.blockmeter.measurebox.util.parser.ParseIdentifier;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class ClientMeasureBoxTest {
 
     @ParameterizedTest
-    @CsvSource({ "1|2|0, 0|0|0, overworld, red, finished" })
-    void testPacketByteBuf(@CsvToMBD final MeasureBoxData data) {
+    @JSONSource(classes = { ParseBlockPos.class, ParseBlockPos.class,
+            ParseIdentifier.class, ParseDyeColor.class,
+            Boolean.class }, jsons = {
+                    "(1|2|0), (0|0|0), overworld, red, true",
+                    "(-1020|30|10), (-1000|100|20), end, blue, false",
+                    "(1|2|0), (0|256|0), overworld, red, true",
+                    "(1400|2|-6000), (1200|32|-5000), overworld, red, true" })
+    void testPacketByteBuf(BlockPos bp1, BlockPos bp2, Identifier dimension,
+            DyeColor color, boolean finished) {
         final PacketByteBuf expectedBuf = new PacketByteBuf(Unpooled.buffer());
-        expectedBuf.writeBlockPos(data.bp1);
-        expectedBuf.writeBlockPos(data.bp2);
-        expectedBuf.writeIdentifier(data.dimension);
-        expectedBuf.writeInt(data.color.getId());
-        expectedBuf.writeBoolean(data.finished);
-        expectedBuf.writeInt(data.mode);
-        expectedBuf.writeInt(data.orientation);
+        expectedBuf.writeBlockPos(bp1);
+        expectedBuf.writeBlockPos(bp2);
+        expectedBuf.writeIdentifier(dimension);
+        expectedBuf.writeInt(color.getId());
+        expectedBuf.writeBoolean(finished);
+        expectedBuf.writeInt(0);
+        expectedBuf.writeInt(0);
 
         final ClientMeasureBox mb = ClientMeasureBox
                 .fromPacketByteBuf(expectedBuf);
@@ -59,4 +71,3 @@ public class ClientMeasureBoxTest {
 
     }
 }
-

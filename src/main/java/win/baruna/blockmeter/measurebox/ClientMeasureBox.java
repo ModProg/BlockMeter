@@ -31,7 +31,8 @@ import win.baruna.blockmeter.ModConfig;
 public class ClientMeasureBox extends MeasureBox {
     private Box box;
 
-    public ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd,
+    protected ClientMeasureBox(final BlockPos blockStart,
+            final BlockPos blockEnd,
             final Identifier dimension, final DyeColor color,
             final boolean finished, final int mode,
             final int orientation) {

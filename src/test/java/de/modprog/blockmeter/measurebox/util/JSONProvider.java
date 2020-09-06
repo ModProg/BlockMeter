@@ -57,7 +57,7 @@ public class JSONProvider
     }
 
     private String trimspaces(String string) {
-        return string.replaceAll("^\s*|\s*$", "");
+        return string.replaceAll("^\\s*|\\s*$", "");
     }
 
     public String[] split(String input) {

@@ -3,15 +3,16 @@ package de.modprog.blockmeter.util;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import com.google.gson.Gson;
-
-import de.modprog.blockmeter.util.parser.Parser;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.support.AnnotationConsumer;
+
+import de.modprog.blockmeter.util.parser.Parser;
 
 public class JSONProvider
         implements ArgumentsProvider, AnnotationConsumer<JSONSource> {
@@ -27,20 +28,23 @@ public class JSONProvider
         classes = source.classes();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public Stream<? extends Arguments> provideArguments(
             ExtensionContext context) {
         Gson gson = new Gson();
         return Stream.of(jsons).map(this::split).map((objectsStrings) -> {
-            Object[] objects = new Object[objectsStrings.length];
+            Builder<Object> builder = Stream.builder();
             for (int i = 0; i < objectsStrings.length; i++) {
 
                 if (Parser.class.isAssignableFrom(classes[i]))
 
                     try {
-                        objects[i] = ((Parser) classes[i].getConstructor()
-                                .newInstance())
-                                        .parse(trimspaces(objectsStrings[i]));
+                        builder.add(
+                                ((Parser<?>) classes[i]
+                                        .getConstructor()
+                                        .newInstance())
+                                                .parse(trimspaces(
+                                                        objectsStrings[i])));
                     } catch (InstantiationException | IllegalAccessException
                             | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException
@@ -48,11 +52,11 @@ public class JSONProvider
                         e.printStackTrace();
                     }
                 else {
-                    objects[i] = gson.fromJson(objectsStrings[i], classes[i]);
+                    builder.add(gson.fromJson(objectsStrings[i], classes[i]));
                 }
             }
-            return objects;
-        }).map(Arguments::of);
+            return Arguments.of(builder.build().toArray());
+        });
     }
 
     private String trimspaces(String string) {

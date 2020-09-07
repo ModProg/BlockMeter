@@ -165,8 +165,8 @@ public class ClientMeasureBoxTest {
     @ParameterizedTest
     @JSONSource(classes = { ParseBlockPos.class, ParseBlockPos.class,
             ParseBlockPos.class }, jsons = {
-                "(0|1|2), (3|4|5), (0|4|2)"
-    })
+                    "(0|1|2), (3|4|5), (0|4|2)"
+            })
     void testLoosenCorner(BlockPos bp0, BlockPos bp1, BlockPos newBp0) {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
             final ClientMeasureBox box = ClientMeasureBox

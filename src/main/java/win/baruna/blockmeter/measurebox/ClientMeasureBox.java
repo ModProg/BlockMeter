@@ -31,13 +31,9 @@ import win.baruna.blockmeter.ModConfig;
 public class ClientMeasureBox extends MeasureBox {
     private Box box;
 
-    protected ClientMeasureBox(final BlockPos blockStart,
-            final BlockPos blockEnd,
-            final Identifier dimension, final DyeColor color,
-            final boolean finished, final int mode,
-            final int orientation) {
-        super(blockStart, blockEnd, dimension, color, finished, mode,
-                orientation);
+    protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension,
+            final DyeColor color, final boolean finished, final int mode, final int orientation) {
+        super(blockStart, blockEnd, dimension, color, finished, mode, orientation);
         updateBoundingBox();
     }
 
@@ -46,10 +42,8 @@ public class ClientMeasureBox extends MeasureBox {
         updateBoundingBox();
     }
 
-    public static ClientMeasureBox getBox(final BlockPos block,
-            final Identifier dimension) {
-        final ClientMeasureBox box = new ClientMeasureBox(block, block,
-                dimension, getSelectedColor(), false, 0, 0);
+    public static ClientMeasureBox getBox(final BlockPos block, final Identifier dimension) {
+        final ClientMeasureBox box = new ClientMeasureBox(block, block, dimension, getSelectedColor(), false, 0, 0);
         incrementColor();
         return box;
     }
@@ -57,8 +51,7 @@ public class ClientMeasureBox extends MeasureBox {
     /**
      * Sets the second box corner
      * 
-     * @param block
-     *            second corner position
+     * @param block second corner position
      */
     public void setBlockEnd(final BlockPos block) {
         blockEnd = block;
@@ -84,40 +77,59 @@ public class ClientMeasureBox extends MeasureBox {
     /**
      * Sets the Color of the MeasureBox
      * 
-     * @param color
-     *            Color to be applied
+     * @param color Color to be applied
      */
     public void setColor(final DyeColor color) {
         this.color = color;
     }
 
     /**
+     * Tests if the block is on a corner of the box
+     * 
+     * @param block Position to test
+     * @return true if block is a corner
+     */
+    public boolean isCorner(final BlockPos block) {
+        return (block.getX() == blockStart.getX() || block.getX() == blockEnd.getX())
+                && (block.getY() == blockStart.getY() || block.getY() == blockEnd.getY())
+                && (block.getZ() == blockStart.getZ() || block.getZ() == blockEnd.getZ());
+    }
+
+    /**
+     * Loosens the selected Corner i.e. the opposite corner gets fixed, and the
+     * current one can be moved
+     * 
+     * @param block The corner to loosen, needs to be an actual corner of the box
+     */
+    public void loosenCorner(final BlockPos block) {
+        final int x = blockStart.getX() == block.getX() ? blockEnd.getX() : blockStart.getX();
+        final int y = blockStart.getY() == block.getY() ? blockEnd.getY() : blockStart.getY();
+        final int z = blockStart.getZ() == block.getZ() ? blockEnd.getZ() : blockStart.getZ();
+        blockStart = new BlockPos(x, y, z);
+        blockEnd = block;
+        finished = false;
+    }
+
+    /**
      * Renders the Box
      * 
-     * @param camera
-     *            rendering Camera
+     * @param camera           rendering Camera
      * @param stack
-     * @param currentDimension
-     *            Dimension the Player currently is in
+     * @param currentDimension Dimension the Player currently is in
      */
-    public void render(final Camera camera, final MatrixStack stack,
-            final Identifier currentDimension) {
+    public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension) {
         render(camera, stack, currentDimension, null);
     }
 
     /**
      * Renders the Box
      * 
-     * @param camera
-     *            rendering Camera
+     * @param camera           rendering Camera
      * @param stack
-     * @param currentDimension
-     *            Dimension the Player currently is in
-     * @param boxCreatorName
-     *            Name of the Player that created the Box
+     * @param currentDimension Dimension the Player currently is in
+     * @param boxCreatorName   Name of the Player that created the Box
      */
-    public void render(final Camera camera, final MatrixStack stack,
-            final Identifier currentDimension,
+    public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension,
             final Text boxCreatorName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
@@ -143,71 +155,52 @@ public class ClientMeasureBox extends MeasureBox {
 
         buffer.begin(3, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
 
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
 
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
 
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
 
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY,
-                (float) this.box.maxZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
                 .next();
 
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY,
-                (float) this.box.minZ).color(r, g, b, a)
+        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
         tess.draw();
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
             buffer.begin(1, VertexFormats.POSITION_COLOR);
-            buffer.vertex(model, (float) this.box.minX, (float) this.box.minY,
-                    (float) this.box.minZ).color(r, g, b, a)
+            buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                     .next();
-            buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY,
-                    (float) this.box.maxZ).color(r, g, b, a)
+            buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
                     .next();
             tess.draw();
 
@@ -223,41 +216,6 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     /**
-     * Tests if the block is on a corner of the box
-     * 
-     * @param block
-     *            Position to test
-     * @return true if block is a corner
-     */
-    public boolean isCorner(final BlockPos block) {
-        return (block.getX() == blockStart.getX()
-                || block.getX() == blockEnd.getX())
-                && (block.getY() == blockStart.getY()
-                        || block.getY() == blockEnd.getY())
-                && (block.getZ() == blockStart.getZ()
-                        || block.getZ() == blockEnd.getZ());
-    }
-
-    /**
-     * Loosens the selected Corner i.e. the opposite corner gets fixed, and the
-     * current one can be moved
-     * 
-     * @param block
-     *            The corner to loosen, needs to be an actual corner of the box
-     */
-    public void loosenCorner(final BlockPos block) {
-        final int x = blockStart.getX() == block.getX() ? blockEnd.getX()
-                : blockStart.getX();
-        final int y = blockStart.getY() == block.getY() ? blockEnd.getY()
-                : blockStart.getY();
-        final int z = blockStart.getZ() == block.getZ() ? blockEnd.getZ()
-                : blockStart.getZ();
-        blockStart = new BlockPos(x, y, z);
-        blockEnd = block;
-        finished = false;
-    }
-
-    /**
      * Calculates the BoundingBox for rendering
      */
     private void updateBoundingBox() {
@@ -268,34 +226,26 @@ public class ClientMeasureBox extends MeasureBox {
         final int by = this.blockEnd.getY();
         final int bz = this.blockEnd.getZ();
 
-        this.box = new Box((double) Math.min(ax, bx), (double) Math.min(ay, by),
-                (double) Math.min(az, bz),
-                (double) (Math.max(ax, bx) + 1),
-                (double) (Math.max(ay, by) + 1),
-                (double) (Math.max(az, bz) + 1));
+        this.box = new Box((double) Math.min(ax, bx), (double) Math.min(ay, by), (double) Math.min(az, bz),
+                (double) (Math.max(ax, bx) + 1), (double) (Math.max(ay, by) + 1), (double) (Math.max(az, bz) + 1));
 
     }
 
     /**
      * Draws the length label
      * 
-     * @param camera
-     *            rendering Camera
+     * @param camera         rendering Camera
      * @param stack
-     * @param boxCreatorName
-     *            Name of the Box creator
+     * @param boxCreatorName Name of the Box creator
      */
-    private void drawLengths(final Camera camera, final MatrixStack stack,
-            final Text boxCreatorName) {
+    private void drawLengths(final Camera camera, final MatrixStack stack, final Text boxCreatorName) {
         final int lengthX = (int) this.box.getXLength();
         final int lengthY = (int) this.box.getYLength();
         final int lengthZ = (int) this.box.getZLength();
 
         final Vec3d boxCenter = this.box.getCenter();
-        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY,
-                this.box.minZ)
-                        .distanceTo(new Vec3d(this.box.maxX, this.box.maxY,
-                                this.box.maxZ));
+        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ)
+                .distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
 
         final float yaw = camera.getYaw();
         final float pitch = camera.getPitch();
@@ -303,77 +253,60 @@ public class ClientMeasureBox extends MeasureBox {
 
         final List<Line> lines = new ArrayList<>();
         lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ,
-                        this.box.minX, this.box.minY, this.box.maxZ),
+                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.minZ,
-                        this.box.minX, this.box.maxY, this.box.maxZ),
+                new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.minZ,
-                        this.box.maxX, this.box.minY, this.box.maxZ),
+                new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.maxX, this.box.maxY, this.box.minZ,
-                        this.box.maxX, this.box.maxY, this.box.maxZ),
+                new Box(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ),
                 pos));
         Collections.sort(lines);
         final Vec3d lineZ = lines.get(0).line.getCenter();
 
         lines.clear();
         lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ,
-                        this.box.minX, this.box.maxY, this.box.minZ),
+                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.maxZ,
-                        this.box.minX, this.box.maxY, this.box.maxZ),
+                new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.minZ,
-                        this.box.maxX, this.box.maxY, this.box.minZ),
+                new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.maxZ,
-                        this.box.maxX, this.box.maxY, this.box.maxZ),
+                new Box(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ),
                 pos));
         Collections.sort(lines);
         final Vec3d lineY = lines.get(0).line.getCenter();
 
         lines.clear();
         lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ,
-                        this.box.maxX, this.box.minY, this.box.minZ),
+                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.maxZ,
-                        this.box.maxX, this.box.minY, this.box.maxZ),
+                new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.minZ,
-                        this.box.maxX, this.box.maxY, this.box.minZ),
+                new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ),
                 pos));
         lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.maxZ,
-                        this.box.maxX, this.box.maxY, this.box.maxZ),
+                new Box(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ),
                 pos));
         Collections.sort(lines);
         final Vec3d lineX = lines.get(0).line.getCenter();
 
-        final String playerNameStr = (boxCreatorName == null ? ""
-                : boxCreatorName.getString() + " : ");
+        final String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName.getString() + " : ");
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw,
-                    pitch,
+            this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch,
                     playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch,
-                playerNameStr + String.valueOf(lengthX), pos);
-        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch,
-                playerNameStr + String.valueOf(lengthY), pos);
-        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch,
-                playerNameStr + String.valueOf(lengthZ), pos);
+        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX), pos);
+        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + String.valueOf(lengthY), pos);
+        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ), pos);
     }
 
     /**
@@ -388,24 +321,19 @@ public class ClientMeasureBox extends MeasureBox {
      * @param text
      * @param playerPos
      */
-    private void drawText(final MatrixStack stack, final double x,
-            final double y, final double z, final float yaw,
+    private void drawText(final MatrixStack stack, final double x, final double y, final double z, final float yaw,
             final float pitch, final String text, final Vec3d playerPos) {
         @SuppressWarnings("resource")
-        final TextRenderer textRenderer = MinecraftClient
-                .getInstance().textRenderer;
+        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final LiteralText literalText = new LiteralText(text);
 
         float size = 0.03f;
         final int constDist = 10;
 
-        if (AutoConfig.getConfigHolder(ModConfig.class)
-                .getConfig().minimalLabelSize) {
-            final float dist = (float) Math
-                    .sqrt((x - playerPos.x) * (x - playerPos.x)
-                            + (y - playerPos.y) * (y - playerPos.y)
-                            + (z - playerPos.z) * (z - playerPos.z));
+        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
+            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x)
+                    + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
             if (dist > constDist)
                 size = dist * size / constDist;
         }
@@ -422,20 +350,14 @@ public class ClientMeasureBox extends MeasureBox {
 
         final float[] colors = this.color.getColorComponents();
         buffer.begin(7, VertexFormats.POSITION_COLOR);
-        buffer.vertex(model, -1, -1, 0)
-                .color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, -1, 8, 0)
-                .color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, width, 8, 0)
-                .color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, width, -1, 0)
-                .color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, -1, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, -1, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, width, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+        buffer.vertex(model, width, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
         Tessellator.getInstance().draw();
 
-        final VertexConsumerProvider.Immediate immediate = VertexConsumerProvider
-                .immediate(buffer);
-        textRenderer.draw(literalText, 0.0f, 0.0f, this.color.getSignColor(),
-                false, // shadow
+        final VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(buffer);
+        textRenderer.draw(literalText, 0.0f, 0.0f, this.color.getSignColor(), false, // shadow
                 model, // matrix
                 immediate, // draw buffer
                 true, // seeThrough
@@ -469,20 +391,17 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     public static void setColorIndex(final int newColor) {
-        BlockMeterClient.getConfigManager().getConfig().colorIndex = Math
-                .floorMod(newColor, DyeColor.values().length);
+        BlockMeterClient.getConfigManager().getConfig().colorIndex = Math.floorMod(newColor, DyeColor.values().length);
         BlockMeterClient.getConfigManager().save();
     }
 
     /**
      * Parses a ClientMeasureBox from a PacketByteBuf
      * 
-     * @param attachedData
-     *            a PacketByteBuf containing the ClientMeasureBox
+     * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
-    public static ClientMeasureBox fromPacketByteBuf(
-            final PacketByteBuf attachedData) {
+    public static ClientMeasureBox fromPacketByteBuf(final PacketByteBuf attachedData) {
         return new ClientMeasureBox(attachedData);
     }
 

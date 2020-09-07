@@ -1,4 +1,4 @@
-package de.modprog.blockmeter.measurebox.util;
+package de.modprog.blockmeter.util;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

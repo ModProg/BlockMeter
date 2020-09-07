@@ -1,4 +1,4 @@
-package de.modprog.blockmeter.measurebox.util;
+package de.modprog.blockmeter.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -6,12 +6,12 @@ import java.util.stream.Stream;
 
 import com.google.gson.Gson;
 
+import de.modprog.blockmeter.util.parser.Parser;
+
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.support.AnnotationConsumer;
-
-import de.modprog.blockmeter.measurebox.util.parser.Parser;
 
 public class JSONProvider
         implements ArgumentsProvider, AnnotationConsumer<JSONSource> {
@@ -48,7 +48,6 @@ public class JSONProvider
                         e.printStackTrace();
                     }
                 else {
-                    System.out.println(objectsStrings[i]);
                     objects[i] = gson.fromJson(objectsStrings[i], classes[i]);
                 }
             }

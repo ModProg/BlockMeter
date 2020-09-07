@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.params.ParameterizedTest;
 
-import de.modprog.blockmeter.measurebox.util.JSONSource;
-import de.modprog.blockmeter.measurebox.util.parser.ParseBlockPos;
-import de.modprog.blockmeter.measurebox.util.parser.ParseDyeColor;
-import de.modprog.blockmeter.measurebox.util.parser.ParseIdentifier;
+import de.modprog.blockmeter.util.JSONSource;
+import de.modprog.blockmeter.util.parser.ParseBlockPos;
+import de.modprog.blockmeter.util.parser.ParseDyeColor;
+import de.modprog.blockmeter.util.parser.ParseIdentifier;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.DyeColor;

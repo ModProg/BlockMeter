@@ -129,7 +129,8 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * Clears Boxes and sends this information to the server
      */
-    public void clear() {
+    public boolean clear() {
+        boolean hasbox = boxes.size() > 0;
         boxes.clear();
         sendBoxList();
 
@@ -139,6 +140,7 @@ public class BlockMeterClient implements ClientModInitializer {
             cfg.colorIndex = 0;
             confmgr.save();
         }
+        return hasbox;
     }
 
     /**
@@ -160,7 +162,6 @@ public class BlockMeterClient implements ClientModInitializer {
         return true;
     }
 
-    
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
@@ -168,8 +169,10 @@ public class BlockMeterClient implements ClientModInitializer {
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
-        client.textRenderer.draw(stack, "XXX", -100, -100, 0); // MEH! but this seems to be needed to get the first
-                                                               // background rectangle
+        // MEH! but this seems to be needed to get the first background
+        // rectangle
+        client.textRenderer.draw(stack, "XXX", -100, -100, 0);
+
         if (this.active || cfg.showBoxesWhenDisabled)
             if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
@@ -226,22 +229,24 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
         // This is ugly I know, but I did not find something better
-        // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13 )
+        // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
         confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
-                if (this.active) {
-                    if (Screen.hasShiftDown()) {
-                        if (undo())
-                            e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
-                    } else if (Screen.hasControlDown()) {
-                        clear();
-                        e.player.sendMessage(new TranslatableText("blockmeter.clearall"), true);
-                    } else {
-                        disable();
-                        e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                    }
+                if (Screen.hasShiftDown()) {
+                    if (undo())
+                        e.player.sendMessage(
+                                new TranslatableText("blockmeter.clearlast"),
+                                true);
+                } else if (Screen.hasControlDown()) {
+                    if (clear())
+                        e.player.sendMessage(
+                                new TranslatableText("blockmeter.clearall"),
+                                true);
+                } else if (this.active) {
+                    disable();
+                    e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
                 } else {
                     active = true;
                     ItemStack itemStack = e.player.getMainHandStack();
@@ -317,6 +322,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Finds a box to be edited when selecting this block
+     * 
      * @param block selected block
      * @return Box to be edited
      */
@@ -340,6 +346,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * handles the BoxList of other Players
+     * 
      * @param context
      * @param data
      */

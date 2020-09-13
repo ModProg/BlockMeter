@@ -28,7 +28,7 @@
     },    
   "name": "Block Meter",
   "description": "A simple mod to measure your blocks!",
-  "icon": "pack.png",
+  "icon": "icon.png",
   "authors": [ "MadeOke", "Giselbaer", "ModProg" ],
 
   "contact": {

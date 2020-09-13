@@ -140,6 +140,7 @@ public class ClientMeasureBox extends MeasureBox {
         RenderSystem.disableDepthTest();
         RenderSystem.disableTexture();
         RenderSystem.disableBlend();
+        RenderSystem.disableLighting();
 
         stack.push();
         stack.translate(-pos.x, -pos.y, -pos.z);

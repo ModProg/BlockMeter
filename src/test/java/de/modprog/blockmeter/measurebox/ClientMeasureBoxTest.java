@@ -184,6 +184,20 @@ public class ClientMeasureBoxTest {
         }
     }
 
+    @ParameterizedTest
+    @JSONSource(classes = { ParseDyeColor.class }, jsons = {
+            "red", "blue", "white", "black"
+    })
+    void testSetColorIndex(DyeColor color) {
+        try (MockedStatic<BlockMeterClient> client = getBMC()) {
+            ClientMeasureBox.setColorIndex(color.getId());
+            final ClientMeasureBox box = ClientMeasureBox
+                    .getBox(new BlockPos(0, 0, 0), DimensionType.OVERWORLD_ID);
+
+            assertThat(box.getColor()).isEqualTo(color);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private MockedStatic<BlockMeterClient> getBMC() {
         final MockedStatic<BlockMeterClient> client = Mockito

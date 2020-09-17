@@ -96,6 +96,7 @@ public class BlockMeterServer implements ModInitializer {
 
     /**
      * Builds a S2CPacket containing the BoxList
+     * 
      * @return S2CPacket containing the BoxList
      */
     private PacketByteBuf buildS2CPacket() {

@@ -50,8 +50,7 @@ public class MeasureBox {
     /**
      * Creates a MeasureBox from a PacketByteBuf
      * 
-     * @param attachedData
-     *            a PacketByteBuf containing the ClientMeasureBox
+     * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
     protected MeasureBox(PacketByteBuf attachedData) {
@@ -63,9 +62,6 @@ public class MeasureBox {
         this.mode = attachedData.readInt();
         this.orientation = attachedData.readInt();
 
-        // TODO enforce these when creating a box
-        // Math.abs(blockStart.getX() - blockEnd.getX()) > 1024
-        // || Math.abs(blockStart.getZ() - blockEnd.getZ()) > 1024 ||
         if (blockStart.getY() < 0 || blockStart.getY() > 256
                 || blockEnd.getY() < 0 || blockEnd.getY() > 256
                 || dimension == null) {
@@ -76,8 +72,7 @@ public class MeasureBox {
     /**
      * Fills a PacketByteBuf with the MeasureBox
      * 
-     * @param buf
-     *            PacketByteBuf to fill
+     * @param buf PacketByteBuf to fill
      */
     public void writePacketBuf(PacketByteBuf buf) {
         buf.writeBlockPos(this.blockStart);
@@ -92,8 +87,7 @@ public class MeasureBox {
     /**
      * Parses a MeasureBox from a PacketByteBuf
      * 
-     * @param attachedData
-     *            a PacketByteBuf containing the ClientMeasureBox
+     * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
     public static MeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {

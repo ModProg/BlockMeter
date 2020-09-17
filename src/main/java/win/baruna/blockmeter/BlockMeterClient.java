@@ -301,9 +301,15 @@ public class BlockMeterClient implements ClientModInitializer {
 
             if (currentBox == null) {
                 if (Screen.hasShiftDown()) {
-                    currentBox = findBox(block);
-                    if (currentBox != null)
-                        currentBox.loosenCorner(block);
+                    ClientMeasureBox[] boxes = findBoxes(block);
+                    switch (boxes.length) {
+                    case 0:
+                        break;
+                    case 1:
+                    default:
+                        boxes[0].loosenCorner(block);
+                        break;
+                    }
                 } else {
                     final ClientMeasureBox box = ClientMeasureBox.getBox(block,
                             playerEntity.world.getRegistryKey().getValue());
@@ -326,8 +332,8 @@ public class BlockMeterClient implements ClientModInitializer {
      * @param block selected block
      * @return Box to be edited
      */
-    private ClientMeasureBox findBox(BlockPos block) {
-        return boxes.stream().filter(box -> box.isCorner(block)).findAny().orElse(null);
+    private ClientMeasureBox[] findBoxes(BlockPos block) {
+        return boxes.stream().filter(box -> box.isCorner(block)).toArray(ClientMeasureBox[]::new);
     }
 
     /**

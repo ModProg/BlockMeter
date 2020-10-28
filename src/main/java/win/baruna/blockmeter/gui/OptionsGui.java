@@ -38,7 +38,7 @@ public class OptionsGui extends Screen {
         }
 
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
-                new TranslatableText("blockmeter.keepcolor", new Object[] {
+                new TranslatableText("blockmeter.keepColor", new Object[] {
                         new TranslatableText(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
                     config.incrementColor = !config.incrementColor;
@@ -58,7 +58,7 @@ public class OptionsGui extends Screen {
                 }));
                 
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
-                new TranslatableText("blockmeter.showothers", new Object[] {
+                new TranslatableText("blockmeter.showOthers", new Object[] {
                         new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
                     config.showOtherUsersBoxes = !config.showOtherUsersBoxes;

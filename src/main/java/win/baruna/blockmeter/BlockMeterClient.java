@@ -36,6 +36,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.gui.OptionsGui;
+import win.baruna.blockmeter.gui.SelectBoxGui;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class BlockMeterClient implements ClientModInitializer {
@@ -56,7 +57,7 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * ConfigManager of BlockMeter
      */
-    private static ConfigManager<ModConfig> confmgr;
+    private static ConfigManager<ModConfig> confMgr;
 
     /**
      * Accessor for the ModConfigManager
@@ -64,7 +65,7 @@ public class BlockMeterClient implements ClientModInitializer {
      * @return ConfigManager for handling the Config
      */
     public static ConfigManager<ModConfig> getConfigManager() {
-        return confmgr;
+        return confMgr;
     }
 
     /**
@@ -91,12 +92,19 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * The QuickMenu for changing of Color etc.
      */
-    private OptionsGui quickmenu;
+    private OptionsGui quickMenu;
+
+
+    /**
+     * The QuickMenu for selecting on of multiple Boxes.
+     */
+    private SelectBoxGui selectBoxGui;
 
     public BlockMeterClient() {
         active = false;
         boxes = new ArrayList<>();
-        quickmenu = new OptionsGui();
+        quickMenu = new OptionsGui();
+        selectBoxGui = new SelectBoxGui();
         otherUsersBoxes = null;
         BlockMeterClient.instance = this;
     }
@@ -106,7 +114,7 @@ public class BlockMeterClient implements ClientModInitializer {
      */
     public void disable() {
         active = false;
-        if (confmgr.getConfig().deleteBoxesOnDisable) {
+        if (confMgr.getConfig().deleteBoxesOnDisable) {
             clear();
         }
     }
@@ -119,10 +127,10 @@ public class BlockMeterClient implements ClientModInitializer {
         boxes.clear();
 
         // Resets Color to always start with white in an other world
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = 0;
-            confmgr.save();
+            confMgr.save();
         }
     }
 
@@ -130,17 +138,17 @@ public class BlockMeterClient implements ClientModInitializer {
      * Clears Boxes and sends this information to the server
      */
     public boolean clear() {
-        boolean hasbox = boxes.size() > 0;
+        boolean hasBox = boxes.size() > 0;
         boxes.clear();
         sendBoxList();
 
         // Reset the color as all Boxes where deleted
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = 0;
-            confmgr.save();
+            confMgr.save();
         }
-        return hasbox;
+        return hasBox;
     }
 
     /**
@@ -153,10 +161,10 @@ public class BlockMeterClient implements ClientModInitializer {
         this.boxes.remove(this.boxes.size() - 1);
         sendBoxList();
 
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = Math.floorMod(cfg.colorIndex - 1, DyeColor.values().length);
-            confmgr.save();
+            confMgr.save();
         }
 
         return true;
@@ -230,19 +238,19 @@ public class BlockMeterClient implements ClientModInitializer {
 
         // This is ugly I know, but I did not find something better
         // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
-        confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+        confMgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
         ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (Screen.hasShiftDown()) {
                     if (undo())
                         e.player.sendMessage(
-                                new TranslatableText("blockmeter.clearlast"),
+                                new TranslatableText("blockmeter.clearLast"),
                                 true);
                 } else if (Screen.hasControlDown()) {
                     if (clear())
                         e.player.sendMessage(
-                                new TranslatableText("blockmeter.clearall"),
+                                new TranslatableText("blockmeter.clearAll"),
                                 true);
                 } else if (this.active) {
                     disable();
@@ -261,7 +269,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
             if (keyBindingMenu.wasPressed() && active
                     && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
-                MinecraftClient.getInstance().openScreen((Screen) this.quickmenu);
+                MinecraftClient.getInstance().openScreen((Screen) this.quickMenu);
             }
 
             // Updates Selection preview
@@ -306,8 +314,12 @@ public class BlockMeterClient implements ClientModInitializer {
                     case 0:
                         break;
                     case 1:
-                    default:
                         boxes[0].loosenCorner(block);
+                        break;
+                    default:
+                        this.selectBoxGui.setBoxes(boxes);
+                        this.selectBoxGui.setBlock(block);
+                        MinecraftClient.getInstance().openScreen((Screen) this.selectBoxGui);
                         break;
                     }
                 } else {

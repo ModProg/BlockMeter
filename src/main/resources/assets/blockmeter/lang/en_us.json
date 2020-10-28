@@ -27,6 +27,7 @@
     "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[1]": "The server requires the Block Meter mod either",
     "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "as plugin (Bukkit) or mod (Fabric) installed.",
     
-    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "Show Boxes when Block Meter is disabled"
+    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "Show Boxes when Block Meter is disabled",
+    "text.autoconfig.blockmeter.option.backgroundForLabels": "Colored Label Background"
 
 }

@@ -349,21 +349,35 @@ public class ClientMeasureBox extends MeasureBox {
         final Matrix4f model = stack.peek().getModel();
         final BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 
-        final float[] colors = this.color.getColorComponents();
-        buffer.begin(7, VertexFormats.POSITION_COLOR);
-        buffer.vertex(model, -1, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, -1, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, width, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
-        buffer.vertex(model, width, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
-        Tessellator.getInstance().draw();
+        int textColor = color.getSignColor();
+
+        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
+        if (conf.backgroundForLabels) {
+            final float[] colors = this.color.getColorComponents();
+            buffer.begin(7, VertexFormats.POSITION_COLOR);
+            buffer.vertex(model, -1, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+            buffer.vertex(model, -1, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+            buffer.vertex(model, width, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+            buffer.vertex(model, width, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
+            Tessellator.getInstance().draw();
+
+            float[] components = color.getColorComponents();
+            float luminance = (0.299f * components[0] + 0.587f * components[1] + 0.114f * components[2]);
+            textColor = luminance < 0.4f ? DyeColor.WHITE.getSignColor() : DyeColor.BLACK.getSignColor();
+        }
 
         final VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(buffer);
-        textRenderer.draw(literalText, 0.0f, 0.0f, this.color.getSignColor(), false, // shadow
+        textRenderer.draw(
+                literalText,
+                0.0f,
+                0.0f,
+                textColor,
+                !conf.backgroundForLabels, // shadow
                 model, // matrix
                 immediate, // draw buffer
                 true, // seeThrough
                 0, // backgroundColor => underlineColor,
-                0 // light
+                15728880 // light
         );
         immediate.draw();
 

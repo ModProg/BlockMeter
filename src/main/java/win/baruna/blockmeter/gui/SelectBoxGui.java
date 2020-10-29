@@ -6,7 +6,6 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
@@ -39,19 +38,22 @@ public class SelectBoxGui extends Screen {
                     box.getBlockEnd().getZ()
             });
 
-            text.setStyle(text.getStyle().withColor(TextColor.fromRgb(box.getColor().getSignColor())));
+            // text.setStyle(text.getStyle().withColor(TextColor.fromRgb(box.getColor().getSignColor())));
 
             this.addButton(
-                    (AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
-                            this.height / 2 - uiHeight + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT,
-                            text, button -> {
+                    (AbstractButtonWidget) new ColorButton(
+                            this.width / 2 - (BUTTONWIDTH) / 2,
+                            this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING),
+                            BUTTONWIDTH, BUTTONHEIGHT,
+                            text, box.getColor().getColorComponents(), false, true, button -> {
                                 box.loosenCorner(block);
                                 MinecraftClient.getInstance().openScreen((Screen) null);
                             }));
+
         }
 
         this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
-                this.height / 2 - uiHeight + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING,
+                this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING,
                 BUTTONWIDTH, BUTTONHEIGHT,
                 new TranslatableText("gui.cancel"), button -> {
                     MinecraftClient.getInstance().openScreen((Screen) null);

@@ -2,7 +2,9 @@ package win.baruna.blockmeter.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 
+import me.shedaniel.math.Color;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -12,6 +14,7 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.BlockMeterClient;
@@ -33,11 +36,23 @@ public class OptionsGui extends Screen {
         // Create Color Selector
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
-                this.addButton((AbstractButtonWidget) new ColorSelectButton(this.width / 2 - 44 + j * 22, this.height / 2 - 88 + i * 22, 20, 20, "", i * 4 + j));
+                final int colorIndex = i * 4 + j;
+                this.addButton((AbstractButtonWidget) new ColorButton(this.width / 2 - 44 + j * 22,
+                        this.height / 2 - 88 + i * 22, 20, 20, null,
+                        DyeColor.byId(colorIndex).getColorComponents(), config.colorIndex == colorIndex, false,
+                        button -> {
+                            ClientMeasureBox.setColorIndex(colorIndex);
+
+                            final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
+                            if (currentBox != null)
+                                currentBox.setColor(DyeColor.byId(colorIndex));
+                            MinecraftClient.getInstance().openScreen((Screen) null);
+                        }));
             }
         }
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10,
+                BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepColor", new Object[] {
                         new TranslatableText(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
@@ -48,7 +63,8 @@ public class OptionsGui extends Screen {
                     BlockMeterClient.getConfigManager().save();
                 }));
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32, BUTTONWIDTH, 20,
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32,
+                BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
                         new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
@@ -56,8 +72,9 @@ public class OptionsGui extends Screen {
                     MinecraftClient.getInstance().openScreen((Screen) null);
                     BlockMeterClient.getConfigManager().save();
                 }));
-                
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54, BUTTONWIDTH, 20,
+
+        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54,
+                BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showOthers", new Object[] {
                         new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
@@ -78,64 +95,86 @@ public class OptionsGui extends Screen {
         return false;
     }
 
-    private class ColorSelectButton extends ButtonWidget {
-        float[] color;
-        int x;
-        int y;
-        int width;
-        int height;
-        boolean selected;
+}
 
-        ColorSelectButton(final int x, final int y, final int width, final int height, final String string, final int colorIndex) {
-            super(x, y, width, height, new LiteralText(string), button -> {
-                ClientMeasureBox.setColorIndex(colorIndex);
+class ColorButton extends ButtonWidget {
+    Color color;
+    int x;
+    int y;
+    int width;
+    int height;
+    boolean selected;
+    boolean texture;
+    MutableText text;
 
-                final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
-                if (currentBox != null)
-                    currentBox.setColor(DyeColor.byId(colorIndex));
-                MinecraftClient.getInstance().openScreen((Screen) null);
-            });
-            this.selected = false;
-            this.color = DyeColor.byId(colorIndex).getColorComponents();
-            this.x = x + 2;
-            this.y = y + 2;
-            this.width = width - 4;
-            this.height = height - 4;
-            if (BlockMeterClient.getConfigManager().getConfig().colorIndex == colorIndex) {
-                this.setFocused(true);
-                this.selected = true;
-            }
-        }
+    ColorButton(final int x, final int y, final int width, final int height, final MutableText label,
+            final float[] color,
+            final boolean selected, boolean texture, PressAction onPress) {
+        this(x, y, width, height, label, Color.ofRGB(color[0], color[1], color[2]), selected, texture, onPress);
+    }
 
-        @Override
-        public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
-            super.render(stack, int_1, int_2, float_1);
+    ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,
+            final boolean selected, boolean texture, PressAction onPress) {
+        super(x, y, width, height, new LiteralText(""), onPress);
+        this.selected = false;
+        this.color = color;
+        this.x = x + 2;
+        this.y = y + 2;
+        this.width = width - 4;
+        this.height = height - 4;
+        this.setFocused(selected);
+        this.selected = selected;
+        this.text = label;
+        this.texture = texture;
 
-            GlStateManager.disableTexture();
-            final Tessellator tessellator = Tessellator.getInstance();
-            final BufferBuilder bufferBuilder = tessellator.getBuffer();
-            GlStateManager.color4f(this.color[0], this.color[1], this.color[2], 1.0f);
-            bufferBuilder.begin(7, VertexFormats.POSITION);
-            bufferBuilder.vertex((double) this.x, (double) this.y, 0.0).next();
-            bufferBuilder.vertex((double) this.x, this.y + this.height, 0.0).next();
-            bufferBuilder.vertex(this.x + this.width, this.y + this.height, 0.0).next();
-            bufferBuilder.vertex(this.x + this.width, (double) this.y, 0.0).next();
+    }
+
+    @Override
+    public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
+        super.render(stack, int_1, int_2, float_1);
+
+        GlStateManager.disableTexture();
+        final Tessellator tessellator = Tessellator.getInstance();
+        final BufferBuilder bufferBuilder = tessellator.getBuffer();
+        GlStateManager.color4f(this.color.getRed() / 255f, this.color.getGreen() / 255f, this.color.getBlue() / 255f,
+                texture ? 0.4f : 1f);
+        bufferBuilder.begin(7, VertexFormats.POSITION);
+        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0).next();
+        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0).next();
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
+                .next();
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0).next();
+        tessellator.draw();
+
+        if (this.selected) {
+            final float[] highlightColor = DyeColor.YELLOW.getColorComponents();
+            GlStateManager.color4f(highlightColor[0], highlightColor[1], highlightColor[2], 1.0f);
+            GlStateManager.lineWidth(2.0f);
+            bufferBuilder.begin(3, VertexFormats.POSITION);
+            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
+            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
+            bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
+            bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0, 0.0).next();
+            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
             tessellator.draw();
 
-            if (this.selected) {
-                final float[] highlightColor = DyeColor.YELLOW.getColorComponents();
-                GlStateManager.color4f(highlightColor[0], highlightColor[1], highlightColor[2], 1.0f);
-                GlStateManager.lineWidth(2.0f);
-                bufferBuilder.begin(3, VertexFormats.POSITION);
-                bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
-                bufferBuilder.vertex(this.x - 2.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
-                bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
-                bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0, 0.0).next();
-                bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
-                tessellator.draw();
+        }
+        GlStateManager.enableTexture();
 
+        if (text != null) {
+            boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;
+
+            @SuppressWarnings("resource")
+            final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+            int text_width = textRenderer.getWidth(text);
+            if (dark || texture)
+                textRenderer.drawWithShadow(stack, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0xFFFFFF);
+            else {
+                // shadow
+                textRenderer.draw(stack, text, x + width / 2 - text_width / 2 + 1, y + height / 2 - 3, 0xAAAAAA);
+                textRenderer.draw(stack, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0);
             }
-            GlStateManager.enableTexture();
+
         }
     }
 }

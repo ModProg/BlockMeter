@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         java: [ 8, 11]
-        gradle: [ 4.10.2, 5.6.4, 6.5.1]
+        gradle: [ 5.6.4, 6.5.1]
     
     name: Java ${{ matrix.java }}, Gradle ${{ matrix.gradle }}
     steps:

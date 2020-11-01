@@ -276,7 +276,7 @@ public class BlockMeterClient implements ClientModInitializer {
             if (this.active && this.boxes.size() > 0) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
-                    final HitResult rayHit = e.player.raycast((double) e.interactionManager.getReachDistance(), 1.0f,
+                    final HitResult rayHit = e.player.rayTrace((double) e.interactionManager.getReachDistance(), 1.0f,
                             false);
                     if (rayHit.getType() == HitResult.Type.BLOCK) {
                         final BlockHitResult blockHitResult = (BlockHitResult) rayHit;

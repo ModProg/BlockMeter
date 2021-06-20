@@ -13,7 +13,7 @@ import de.modprog.blockmeter.util.parser.ParseBlockPos;
 import de.modprog.blockmeter.util.parser.ParseDyeColor;
 import de.modprog.blockmeter.util.parser.ParseIdentifier;
 import io.netty.buffer.Unpooled;
-import me.sargunvohra.mcmods.autoconfig1u.ConfigManager;
+import me.shedaniel.autoconfig.ConfigManager;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;

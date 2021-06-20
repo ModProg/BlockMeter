@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "0.4-SNAPSHOT"
+    id "fabric-loom" version "0.8-SNAPSHOT"
 	id "org.ajoberstar.grgit" version "3.1.1"
 }
 
@@ -21,10 +21,18 @@ repositories {
     maven {
         url = "https://jitpack.io"
     }
+
+    maven {
+        url = "https://maven.shedaniel.me/"
+    }
+
+    maven {
+        url = "https://maven.terraformersmc.com/"
+    }
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.16  
+targetCompatibility = 1.16
 
 ext.Version = new Properties()
 Version.load(file("version.properties").newReader())
@@ -59,18 +67,14 @@ minecraft {
 
 processResources {
     inputs.property "version", project.version
-    
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
+
+    from("fabric.mod.json") {
         expand "version": project.version
-    }
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
     }
 }
 
 dependencies {
-    modCompile ("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
+    modImplementation ("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
         // This is to fix the error:
         // com.google.*:*:* has more than one client module definitions
         // in gradle > 4
@@ -80,15 +84,14 @@ dependencies {
 
     minecraft   "com.mojang:minecraft:${Versions['minecraft_version']}"
     mappings    "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
-    modCompile  "net.fabricmc:fabric-loader:${Versions['loader_version']}"
-    modCompile  "net.fabricmc.fabric-api:fabric-api:${Versions['fabric_version']}"
+    modImplementation "net.fabricmc:fabric-loader:${Versions['loader_version']}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${Versions['fabric_version']}"
 
-    modCompile  "io.github.prospector:modmenu:${Versions['modmenu_version']}"
-    modCompile  "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
-    modCompile  "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
-
-    include     "me.shedaniel.cloth:config-2:${Versions['clothconfig_version']}"
-    include     "me.sargunvohra.mcmods:autoconfig1u:${Versions['autoconfig_version']}"
+    modImplementation "com.terraformersmc:modmenu:${Versions['modmenu_version']}"
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${Versions['clothconfig_version']}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    include     "me.shedaniel.cloth:cloth-config-fabric:${Versions['clothconfig_version']}"
 
     // Testing
     testImplementation  "org.junit.jupiter:junit-jupiter:5.+"

@@ -8,18 +8,19 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 import io.netty.buffer.Unpooled;
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-import me.sargunvohra.mcmods.autoconfig1u.ConfigManager;
-import me.sargunvohra.mcmods.autoconfig1u.serializer.Toml4jConfigSerializer;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigManager;
+import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
@@ -215,6 +216,7 @@ public class BlockMeterClient implements ClientModInitializer {
      * Gets Triggered when the Player connects to the Server
      */
     public void onConnected() {
+        ClientPlayNetworking.registerReceiver(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
         sendBoxList(); // to make the server send other user's boxes
     }
 
@@ -239,7 +241,6 @@ public class BlockMeterClient implements ClientModInitializer {
         // This is ugly I know, but I did not find something better
         // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
         confMgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-        ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (Screen.hasShiftDown()) {
@@ -359,16 +360,14 @@ public class BlockMeterClient implements ClientModInitializer {
         for (int i = 0; i < boxes.size(); i++) {
             boxes.get(i).writePacketBuf(passedData);
         }
-        ClientSidePacketRegistry.INSTANCE.sendToServer(BlockMeter.C2SPacketIdentifier, passedData);
+        ClientPlayNetworking.send(BlockMeter.C2SPacketIdentifier, passedData);
     }
 
     /**
      * handles the BoxList of other Players
-     * 
-     * @param context
-     * @param data
      */
-    private void handleServerBoxList(PacketContext context, PacketByteBuf data) {
+    private void handleServerBoxList(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf data,
+            PacketSender responseSender) {
         Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
         int playerCount = data.readInt();
         for (int i = 0; i < playerCount; i++) {
@@ -380,7 +379,7 @@ public class BlockMeterClient implements ClientModInitializer {
             }
             receivedBoxes.put(playerName, boxes);
         }
-        context.getTaskQueue().execute(() -> {
+        client.executeTask(() -> {
             otherUsersBoxes = receivedBoxes;
         });
     }

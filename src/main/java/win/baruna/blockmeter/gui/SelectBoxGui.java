@@ -2,7 +2,6 @@ package win.baruna.blockmeter.gui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
@@ -29,33 +28,24 @@ public class SelectBoxGui extends Screen {
 
         for (int i = 0; i < boxes.length; i++) {
             final ClientMeasureBox box = boxes[i];
-            final TranslatableText text = new TranslatableText("blockmeter.boxToString", new Object[] {
-                    box.getBlockStart().getX(),
-                    box.getBlockStart().getY(),
-                    box.getBlockStart().getZ(),
-                    box.getBlockEnd().getX(),
-                    box.getBlockEnd().getY(),
-                    box.getBlockEnd().getZ()
-            });
+            final TranslatableText text = new TranslatableText("blockmeter.boxToString",
+                    new Object[] { box.getBlockStart().getX(), box.getBlockStart().getY(), box.getBlockStart().getZ(),
+                            box.getBlockEnd().getX(), box.getBlockEnd().getY(), box.getBlockEnd().getZ() });
 
             // text.setStyle(text.getStyle().withColor(TextColor.fromRgb(box.getColor().getSignColor())));
 
-            this.addButton(
-                    (AbstractButtonWidget) new ColorButton(
-                            this.width / 2 - (BUTTONWIDTH) / 2,
-                            this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING),
-                            BUTTONWIDTH, BUTTONHEIGHT,
-                            text, box.getColor().getColorComponents(), false, true, button -> {
-                                box.loosenCorner(block);
-                                MinecraftClient.getInstance().openScreen((Screen) null);
-                            }));
+            this.addDrawableChild(new ColorButton(this.width / 2 - (BUTTONWIDTH) / 2,
+                    this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
+                    box.getColor().getColorComponents(), false, true, button -> {
+                        box.loosenCorner(block);
+                        MinecraftClient.getInstance().openScreen((Screen) null);
+                    }));
 
         }
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
-                this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING,
-                BUTTONWIDTH, BUTTONHEIGHT,
-                new TranslatableText("gui.cancel"), button -> {
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
+                this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING, BUTTONWIDTH,
+                BUTTONHEIGHT, new TranslatableText("gui.cancel"), button -> {
                     MinecraftClient.getInstance().openScreen((Screen) null);
                 }));
     }

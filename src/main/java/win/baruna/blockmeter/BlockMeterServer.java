@@ -10,10 +10,11 @@ import java.util.UUID;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import win.baruna.blockmeter.measurebox.MeasureBox;
 
@@ -28,10 +29,7 @@ public class BlockMeterServer implements ModInitializer {
 
         instance = this;
         playerBoxes = new HashMap<>();
-        ServerSidePacketRegistry.INSTANCE.register(BlockMeter.C2SPacketIdentifier,
-                (packetContext, attachedData) -> {
-                    processClientPacket(packetContext, attachedData);
-                });
+        ServerPlayNetworking.registerGlobalReceiver(BlockMeter.C2SPacketIdentifier, this::processClientPacket);
         ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
     }
 
@@ -64,7 +62,9 @@ public class BlockMeterServer implements ModInitializer {
      * @param packetContext
      * @param attachedData
      */
-    private void processClientPacket(PacketContext packetContext, PacketByteBuf attachedData) {
+
+    private void processClientPacket(MinecraftServer server, ServerPlayerEntity player,
+            ServerPlayNetworkHandler handler, PacketByteBuf attachedData, PacketSender responseSender) {
         int size = attachedData.readInt();
 
         try {
@@ -73,15 +73,15 @@ public class BlockMeterServer implements ModInitializer {
                 clientBoxes.add(MeasureBox.fromPacketByteBuf(attachedData));
             }
             synchronized (playerBoxes) {
-                playerBoxes.put(packetContext.getPlayer().getUuid(), clientBoxes);
+                playerBoxes.put(player.getUuid(), clientBoxes);
             }
         } catch (IllegalArgumentException ex) {
             synchronized (playerBoxes) {
-                playerBoxes.remove(packetContext.getPlayer().getUuid());
+                playerBoxes.remove(player.getUuid());
             }
         }
 
-        packetContext.getTaskQueue().execute(() -> informAllPlayers());
+        server.execute(this::informAllPlayers);
     }
 
     /**
@@ -90,7 +90,7 @@ public class BlockMeterServer implements ModInitializer {
     private void informAllPlayers() {
         PacketByteBuf data = buildS2CPacket();
         for (ServerPlayerEntity player: server.getPlayerManager().getPlayerList()) {
-            ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, BlockMeter.S2CPacketIdentifier, data);
+            ServerPlayNetworking.send(player, BlockMeter.S2CPacketIdentifier, data);
         }
     }
 

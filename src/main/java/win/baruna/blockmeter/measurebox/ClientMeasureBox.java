@@ -6,16 +6,17 @@ import java.util.List;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -25,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
@@ -136,11 +138,12 @@ public class ClientMeasureBox extends MeasureBox {
         }
         final Vec3d pos = camera.getPos();
 
+        // FIXME This actually does nothing
         RenderSystem.lineWidth(2.0f);
+        
         RenderSystem.disableDepthTest();
         RenderSystem.disableTexture();
         RenderSystem.disableBlend();
-        RenderSystem.disableLighting();
 
         stack.push();
         stack.translate(-pos.x, -pos.y, -pos.z);
@@ -152,9 +155,11 @@ public class ClientMeasureBox extends MeasureBox {
         final float r = color[0];
         final float g = color[1];
         final float b = color[2];
+        // FIXME This actually does nothing
         final float a = 0.8f;
 
-        buffer.begin(3, VertexFormats.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        buffer.begin(DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                 .next();
@@ -198,7 +203,7 @@ public class ClientMeasureBox extends MeasureBox {
         tess.draw();
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            buffer.begin(1, VertexFormats.POSITION_COLOR);
+            buffer.begin(DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
             buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
                     .next();
             buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(r, g, b, a)
@@ -341,8 +346,8 @@ public class ClientMeasureBox extends MeasureBox {
 
         stack.push();
         stack.translate(x, y + 0.15, z);
-        stack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
-        stack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch));
+        stack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
+        stack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-pitch));
         stack.scale(size, -size, 0.001f);
         final int width = textRenderer.getWidth(literalText);
         stack.translate((-width / 2), 0.0, 0.0);
@@ -354,7 +359,7 @@ public class ClientMeasureBox extends MeasureBox {
         final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
         if (conf.backgroundForLabels) {
             final float[] colors = this.color.getColorComponents();
-            buffer.begin(7, VertexFormats.POSITION_COLOR);
+            buffer.begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             buffer.vertex(model, -1, -1, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
             buffer.vertex(model, -1, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();
             buffer.vertex(model, width, 8, 0).color(colors[0], colors[1], colors[2], 0.8f).next();

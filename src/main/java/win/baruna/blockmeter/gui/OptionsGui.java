@@ -1,16 +1,17 @@
 package win.baruna.blockmeter.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import me.shedaniel.math.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -37,7 +38,7 @@ public class OptionsGui extends Screen {
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
                 final int colorIndex = i * 4 + j;
-                this.addButton((AbstractButtonWidget) new ColorButton(this.width / 2 - 44 + j * 22,
+                this.addDrawableChild(new ColorButton(this.width / 2 - 44 + j * 22,
                         this.height / 2 - 88 + i * 22, 20, 20, null,
                         DyeColor.byId(colorIndex).getColorComponents(), config.colorIndex == colorIndex, false,
                         button -> {
@@ -51,7 +52,7 @@ public class OptionsGui extends Screen {
             }
         }
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10,
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10,
                 BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.keepColor", new Object[] {
                         new TranslatableText(config.incrementColor ? "options.off" : "options.on")
@@ -63,21 +64,23 @@ public class OptionsGui extends Screen {
                     BlockMeterClient.getConfigManager().save();
                 }));
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32,
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32,
                 BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.diagonal", new Object[] {
                         new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
+                    System.err.println("IDK WHAT YOU ARE DOING");
                     config.innerDiagonal = !config.innerDiagonal;
                     MinecraftClient.getInstance().openScreen((Screen) null);
                     BlockMeterClient.getConfigManager().save();
                 }));
 
-        this.addButton((AbstractButtonWidget) new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54,
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54,
                 BUTTONWIDTH, 20,
                 new TranslatableText("blockmeter.showOthers", new Object[] {
                         new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
+                    System.err.println("IDK WHAT YOU ARE DOING");
                     config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
                     MinecraftClient.getInstance().openScreen((Screen) null);
                     BlockMeterClient.getConfigManager().save();
@@ -113,6 +116,15 @@ class ColorButton extends ButtonWidget {
         this(x, y, width, height, label, Color.ofRGB(color[0], color[1], color[2]), selected, texture, onPress);
     }
 
+    @Override
+    public void onPress() {
+        System.out.println(color.getRed());
+        System.out.println(color.getGreen());
+        System.out.println(color.getBlue());
+        System.err.println("IK WHAT YOU ARE DOING");
+        super.onPress();
+    }
+
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,
             final boolean selected, boolean texture, PressAction onPress) {
         super(x, y, width, height, new LiteralText(""), onPress);
@@ -126,40 +138,38 @@ class ColorButton extends ButtonWidget {
         this.selected = selected;
         this.text = label;
         this.texture = texture;
-
+        // this.color = Color.ofRGBA(0.5f, 1f, 1f, 1f);
     }
 
     @Override
     public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
         super.render(stack, int_1, int_2, float_1);
 
-        GlStateManager.disableTexture();
-        final Tessellator tessellator = Tessellator.getInstance();
-        final BufferBuilder bufferBuilder = tessellator.getBuffer();
-        GlStateManager.color4f(this.color.getRed() / 255f, this.color.getGreen() / 255f, this.color.getBlue() / 255f,
-                texture ? 0.4f : 1f);
-        bufferBuilder.begin(7, VertexFormats.POSITION);
-        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0).next();
-        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0).next();
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
+        RenderSystem.disableTexture();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        int r = this.color.getRed();
+        int g = this.color.getGreen();
+        int b = this.color.getBlue();
+        int a = texture ? 102 : 255;
+        bufferBuilder.begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0)
+                .color(r, g, b, a)
                 .next();
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0).next();
+        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
+                .color(r, g, b, a)
+                .next();
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
+                .color(r, g, b, a)
+                .next();
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0)
+                .color(r, g, b, a)
+                .next();
         tessellator.draw();
 
-        if (this.selected) {
-            final float[] highlightColor = DyeColor.YELLOW.getColorComponents();
-            GlStateManager.color4f(highlightColor[0], highlightColor[1], highlightColor[2], 1.0f);
-            GlStateManager.lineWidth(2.0f);
-            bufferBuilder.begin(3, VertexFormats.POSITION);
-            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
-            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
-            bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0 + this.height + 4.0, 0.0).next();
-            bufferBuilder.vertex(this.x - 2.0 + this.width + 4.0, this.y - 2.0, 0.0).next();
-            bufferBuilder.vertex(this.x - 2.0, this.y - 2.0, 0.0).next();
-            tessellator.draw();
-
-        }
-        GlStateManager.enableTexture();
+        RenderSystem.enableTexture();
 
         if (text != null) {
             boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;
@@ -174,7 +184,6 @@ class ColorButton extends ButtonWidget {
                 textRenderer.draw(stack, text, x + width / 2 - text_width / 2 + 1, y + height / 2 - 3, 0xAAAAAA);
                 textRenderer.draw(stack, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0);
             }
-
         }
     }
 }

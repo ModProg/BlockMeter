@@ -15,11 +15,11 @@ public class ClientPlayerConnectionMixin {
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
     private void onConnectedToServerEvent(GameJoinS2CPacket packet, CallbackInfo cbi) {
-        BlockMeterClient.instance.onConnected();
+        BlockMeterClient.getInstance().onConnected();
     }
 
     @Inject(method = "onDisconnect", at = @At("HEAD"))
     public void onDisconnectedFromServerEvent(DisconnectS2CPacket packet, CallbackInfo cbi) {
-        BlockMeterClient.instance.onDisconnected();
+        BlockMeterClient.getInstance().onDisconnected();
     }
 }

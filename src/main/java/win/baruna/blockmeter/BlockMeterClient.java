@@ -36,9 +36,37 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.gui.OptionsGui;
+import win.baruna.blockmeter.gui.SelectBoxGui;
+import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class BlockMeterClient implements ClientModInitializer {
-    public static BlockMeterClient instance;
+    /**
+     * Currently running Instance of BlockMeterClient
+     */
+    private static BlockMeterClient instance;
+
+    /**
+     * Accessor for the BlockMeterClient Instance
+     * 
+     * @return running Instance of BlockMeterClient
+     */
+    public static BlockMeterClient getInstance() {
+        return instance;
+    }
+
+    /**
+     * ConfigManager of BlockMeter
+     */
+    private static ConfigManager<ModConfig> confMgr;
+
+    /**
+     * Accessor for the ModConfigManager
+     * 
+     * @return ConfigManager for handling the Config
+     */
+    public static ConfigManager<ModConfig> getConfigManager() {
+        return confMgr;
+    }
 
     /**
      * The current state of the BlockMeter (activated/deactivated)
@@ -62,16 +90,21 @@ public class BlockMeterClient implements ClientModInitializer {
     private Map<Text, List<ClientMeasureBox>> otherUsersBoxes;
 
     /**
-     * The Menu for changing of Color etc.
+     * The QuickMenu for changing of Color etc.
      */
-    private OptionsGui menu;
+    private OptionsGui quickMenu;
 
-    public static ConfigManager<ModConfig> confmgr;
+
+    /**
+     * The QuickMenu for selecting on of multiple Boxes.
+     */
+    private SelectBoxGui selectBoxGui;
 
     public BlockMeterClient() {
         active = false;
         boxes = new ArrayList<>();
-        menu = new OptionsGui();
+        quickMenu = new OptionsGui();
+        selectBoxGui = new SelectBoxGui();
         otherUsersBoxes = null;
         BlockMeterClient.instance = this;
     }
@@ -81,36 +114,41 @@ public class BlockMeterClient implements ClientModInitializer {
      */
     public void disable() {
         active = false;
-        if (confmgr.getConfig().deleteBoxesOnDisable) {
+        if (confMgr.getConfig().deleteBoxesOnDisable) {
             clear();
         }
     }
 
+    /**
+     * Resets Blockmeter to be used in an other World
+     */
     public void reset() {
         otherUsersBoxes = null;
         boxes.clear();
 
         // Resets Color to always start with white in an other world
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = 0;
-            confmgr.save();
+            confMgr.save();
         }
     }
 
     /**
      * Clears Boxes and sends this information to the server
      */
-    public void clear() {
+    public boolean clear() {
+        boolean hasBox = boxes.size() > 0;
         boxes.clear();
         sendBoxList();
 
         // Reset the color as all Boxes where deleted
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = 0;
-            confmgr.save();
+            confMgr.save();
         }
+        return hasBox;
     }
 
     /**
@@ -123,166 +161,13 @@ public class BlockMeterClient implements ClientModInitializer {
         this.boxes.remove(this.boxes.size() - 1);
         sendBoxList();
 
-        ModConfig cfg = confmgr.getConfig();
+        ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = Math.floorMod(cfg.colorIndex - 1, DyeColor.values().length);
-            confmgr.save();
+            confMgr.save();
         }
 
         return true;
-    }
-
-    /**
-     * Gets Triggered when the Player disconnects from the Server
-     */
-    public void onDisconnected() {
-        reset();
-    }
-
-    /**
-     * Gets Triggered when the Player connects to the Server
-     */
-    public void onConnected() {
-        sendBoxList(); // to make the server send other user's boxes
-    }
-
-    /**
-     * Returns the currently active box
-     * 
-     * @return currently open box or null if none
-     */
-    public ClientMeasureBox currentBox() {
-        if (boxes.size() > 0) {
-            final ClientMeasureBox lastBox = boxes.get(boxes.size() - 1);
-            if (!lastBox.isFinished())
-                return lastBox;
-        }
-        return null;
-    }
-
-    @Override
-    public void onInitializeClient() {
-        final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.blockmeter.key");
-        final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
-        KeyBindingHelper.registerKeyBinding(keyBinding);
-        KeyBindingHelper.registerKeyBinding(keyBindingMenu);
-
-        // This is ugly I know, but I did not find something better 
-        // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13 )
-        confmgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-        ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::receiveBoxList);
-        ClientTickEvents.START_CLIENT_TICK.register(e -> {
-            if (keyBinding.wasPressed()) {
-                if (this.active) {
-                    if (Screen.hasShiftDown()) {
-                        if (undo())
-                            e.player.sendMessage(new TranslatableText("blockmeter.clearlast"), true);
-                    } else if (Screen.hasControlDown()) {
-                        clear();
-                        e.player.sendMessage(new TranslatableText("blockmeter.clearall"), true);
-                    } else {
-                        disable();
-                        e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
-                    }
-                } else {
-                    active = true;
-                    ItemStack itemStack = e.player.getMainHandStack();
-                    currentItem = itemStack.getItem();
-                    e.player.sendMessage(new TranslatableText("blockmeter.toggle.on", new Object[] {
-                            new TranslatableText(itemStack.getTranslationKey(), new Object[0])
-                    }), true);
-                }
-            }
-
-            if (keyBindingMenu.wasPressed()
-                    && active
-                    && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
-                MinecraftClient.getInstance().openScreen((Screen) this.menu);
-            }
-
-            // Updates Selection preview
-            if (this.active && this.boxes.size() > 0) {
-                final ClientMeasureBox lastBox = currentBox();
-                if (lastBox != null) {
-                    final HitResult rayHit = e.player.rayTrace((double) e.interactionManager.getReachDistance(), 1.0f, false);
-                    if (rayHit.getType() == HitResult.Type.BLOCK) {
-                        final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
-                        lastBox.setBlockEnd(new BlockPos(blockHitResult.getBlockPos()));
-                    }
-                }
-            }
-        });
-
-        UseBlockCallback.EVENT.register(
-                (playerEntity, world, hand, hitResult) -> this.addBox(playerEntity, hitResult));
-    }
-
-    /**
-     * Handles the right click Event for creating and confirming new Measuring-Boxes
-     * 
-     * @param playerEntity
-     *            the player object
-     * @param hitResult
-     * @return PASS if not active or wrong item, FAIL when successful, to not send
-     *         the event to the server
-     */
-    private ActionResult addBox(final PlayerEntity playerEntity, final BlockHitResult hitResult) {
-        if (!this.active) {
-            return ActionResult.PASS;
-        }
-        if (playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
-            final BlockPos block = hitResult.getBlockPos();
-
-            if (this.boxes.size() > 0) {
-                final ClientMeasureBox lastBox = this.boxes.get(this.boxes.size() - 1);
-
-                if (lastBox.isFinished()) {
-                    final ClientMeasureBox box = new ClientMeasureBox(block, playerEntity.world.getRegistryKey().getValue());
-                    System.out.println(playerEntity.world.getRegistryKey());
-
-                    this.boxes.add(box);
-                } else {
-                    lastBox.setBlockEnd(block);
-                    lastBox.setFinished();
-                    sendBoxList();
-                }
-            } else {
-                final ClientMeasureBox box2 = new ClientMeasureBox(block,
-                        playerEntity.world.getRegistryKey().getValue());
-                this.boxes.add(box2);
-
-            }
-            return ActionResult.FAIL;
-        }
-        return ActionResult.PASS;
-    }
-
-    private void sendBoxList() {
-        if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
-            return;
-        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-        passedData.writeInt(boxes.size());
-        for (int i = 0; i < boxes.size(); i++) {
-            boxes.get(i).writePacketBuf(passedData);
-        }
-        ClientSidePacketRegistry.INSTANCE.sendToServer(BlockMeter.C2SPacketIdentifier, passedData);
-    }
-
-    private void receiveBoxList(PacketContext context, PacketByteBuf data) {
-        Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
-        int playerCount = data.readInt();
-        for (int i = 0; i < playerCount; i++) {
-            Text playerName = data.readText();
-            int boxCount = data.readInt();
-            List<ClientMeasureBox> boxes = new ArrayList<ClientMeasureBox>(boxCount);
-            for (int j = 0; j < boxCount; j++) {
-                boxes.add(ClientMeasureBox.fromPacketByteBuf(data));
-            }
-            receivedBoxes.put(playerName, boxes);
-        }
-        context.getTaskQueue().execute(() -> {
-            otherUsersBoxes = receivedBoxes;
-        });
     }
 
     public void renderOverlay(float partialTicks, MatrixStack stack) {
@@ -292,7 +177,10 @@ public class BlockMeterClient implements ClientModInitializer {
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
-        client.textRenderer.draw(stack, "XXX", -100, -100, 0); // MEH! but this seems to be needed to get the first background rectangle
+        // MEH! but this seems to be needed to get the first background
+        // rectangle
+        client.textRenderer.draw(stack, "XXX", -100, -100, 0);
+
         if (this.active || cfg.showBoxesWhenDisabled)
             if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
@@ -315,4 +203,186 @@ public class BlockMeterClient implements ClientModInitializer {
                 this.boxes.forEach(box -> box.render(camera, stack, currentDimension));
 
     }
+
+    /**
+     * Gets Triggered when the Player disconnects from the Server
+     */
+    public void onDisconnected() {
+        reset();
+    }
+
+    /**
+     * Gets Triggered when the Player connects to the Server
+     */
+    public void onConnected() {
+        sendBoxList(); // to make the server send other user's boxes
+    }
+
+    /**
+     * Returns the currently active box
+     * 
+     * @return currently open box or null if none
+     */
+    public ClientMeasureBox getCurrentBox() {
+        return boxes.stream().filter(box -> !box.isFinished()).findAny().orElse(null);
+    }
+
+    @Override
+    public void onInitializeClient() {
+        final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M,
+                "category.blockmeter.key");
+        final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
+        KeyBindingHelper.registerKeyBinding(keyBinding);
+        KeyBindingHelper.registerKeyBinding(keyBindingMenu);
+
+        // This is ugly I know, but I did not find something better
+        // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
+        confMgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+        ClientSidePacketRegistry.INSTANCE.register(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
+        ClientTickEvents.START_CLIENT_TICK.register(e -> {
+            if (keyBinding.wasPressed()) {
+                if (Screen.hasShiftDown()) {
+                    if (undo())
+                        e.player.sendMessage(
+                                new TranslatableText("blockmeter.clearLast"),
+                                true);
+                } else if (Screen.hasControlDown()) {
+                    if (clear())
+                        e.player.sendMessage(
+                                new TranslatableText("blockmeter.clearAll"),
+                                true);
+                } else if (this.active) {
+                    disable();
+                    e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
+                } else {
+                    active = true;
+                    ItemStack itemStack = e.player.getMainHandStack();
+                    currentItem = itemStack.getItem();
+                    e.player.sendMessage(
+                            new TranslatableText("blockmeter.toggle.on",
+                                    new Object[] {
+                                            new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }),
+                            true);
+                }
+            }
+
+            if (keyBindingMenu.wasPressed() && active
+                    && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
+                MinecraftClient.getInstance().openScreen((Screen) this.quickMenu);
+            }
+
+            // Updates Selection preview
+            if (this.active && this.boxes.size() > 0) {
+                final ClientMeasureBox currentBox = getCurrentBox();
+                if (currentBox != null) {
+                    final HitResult rayHit = e.player.raycast((double) e.interactionManager.getReachDistance(), 1.0f,
+                            false);
+                    if (rayHit.getType() == HitResult.Type.BLOCK) {
+                        final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
+                        currentBox.setBlockEnd(new BlockPos(blockHitResult.getBlockPos()));
+                    }
+                }
+            }
+        });
+
+        UseBlockCallback.EVENT
+                .register((playerEntity, world, hand, hitResult) -> this.onBlockMeterClick(playerEntity, hitResult));
+    }
+
+    /**
+     * Handles the right click Event for creating and confirming new Measuring-Boxes
+     * 
+     * @param playerEntity the player object
+     * @param hitResult
+     * @return PASS if not active or wrong item, FAIL when successful, to not send
+     *         the event to the server
+     */
+    private ActionResult onBlockMeterClick(final PlayerEntity playerEntity, final BlockHitResult hitResult) {
+        if (!this.active) {
+            return ActionResult.PASS;
+        }
+        if (playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
+            final BlockPos block = hitResult.getBlockPos();
+
+            ClientMeasureBox currentBox = getCurrentBox();
+
+            if (currentBox == null) {
+                if (Screen.hasShiftDown()) {
+                    ClientMeasureBox[] boxes = findBoxes(block);
+                    switch (boxes.length) {
+                    case 0:
+                        break;
+                    case 1:
+                        boxes[0].loosenCorner(block);
+                        break;
+                    default:
+                        this.selectBoxGui.setBoxes(boxes);
+                        this.selectBoxGui.setBlock(block);
+                        MinecraftClient.getInstance().openScreen((Screen) this.selectBoxGui);
+                        break;
+                    }
+                } else {
+                    final ClientMeasureBox box = ClientMeasureBox.getBox(block,
+                            playerEntity.world.getRegistryKey().getValue());
+                    this.boxes.add(box);
+                }
+            } else {
+                currentBox.setBlockEnd(block);
+                currentBox.setFinished();
+                sendBoxList();
+            }
+
+            return ActionResult.FAIL;
+        }
+        return ActionResult.PASS;
+    }
+
+    /**
+     * Finds a box to be edited when selecting this block
+     * 
+     * @param block selected block
+     * @return Box to be edited
+     */
+    private ClientMeasureBox[] findBoxes(BlockPos block) {
+        return boxes.stream().filter(box -> box.isCorner(block)).toArray(ClientMeasureBox[]::new);
+    }
+
+    /**
+     * Sends BoxList to Server if enabled in the config
+     */
+    private void sendBoxList() {
+        if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
+            return;
+        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+        passedData.writeInt(boxes.size());
+        for (int i = 0; i < boxes.size(); i++) {
+            boxes.get(i).writePacketBuf(passedData);
+        }
+        ClientSidePacketRegistry.INSTANCE.sendToServer(BlockMeter.C2SPacketIdentifier, passedData);
+    }
+
+    /**
+     * handles the BoxList of other Players
+     * 
+     * @param context
+     * @param data
+     */
+    private void handleServerBoxList(PacketContext context, PacketByteBuf data) {
+        Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
+        int playerCount = data.readInt();
+        for (int i = 0; i < playerCount; i++) {
+            Text playerName = data.readText();
+            int boxCount = data.readInt();
+            List<ClientMeasureBox> boxes = new ArrayList<ClientMeasureBox>(boxCount);
+            for (int j = 0; j < boxCount; j++) {
+                boxes.add(ClientMeasureBox.fromPacketByteBuf(data));
+            }
+            receivedBoxes.put(playerName, boxes);
+        }
+        context.getTaskQueue().execute(() -> {
+            otherUsersBoxes = receivedBoxes;
+        });
+    }
+
 }

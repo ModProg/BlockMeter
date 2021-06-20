@@ -28,13 +28,13 @@
     },    
   "name": "Block Meter",
   "description": "A simple mod to measure your blocks!",
-  "icon": "pack.png",
+  "icon": "icon.png",
   "authors": [ "MadeOke", "Giselbaer", "ModProg" ],
 
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric",
-    "sources": "https://github.com/gbl/BlockMeter",
-    "issues": "https://github.com/gbl/BlockMeter/issues"
+    "sources": "https://github.com/modprog/BlockMeter",
+    "issues": "https://github.com/modprog/BlockMeter/issues"
   },
 
   "license": "MIT"

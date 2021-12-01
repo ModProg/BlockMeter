@@ -24,6 +24,7 @@ import win.baruna.blockmeter.ModConfig;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class ClientMeasureBoxTest {
+    final Identifier OVERWORLD_ID = new Identifier("overworld");
 
     @ParameterizedTest
     @JSONSource(classes = { ParseBlockPos.class, ParseBlockPos.class,
@@ -97,7 +98,7 @@ public class ClientMeasureBoxTest {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
 
             final ClientMeasureBox box = ClientMeasureBox.getBox(bp0,
-                    DimensionType.OVERWORLD_ID);
+                    OVERWORLD_ID);
 
             box.setBlockEnd(bp1);
 
@@ -110,7 +111,7 @@ public class ClientMeasureBoxTest {
     void testFinished() {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
             final ClientMeasureBox box = ClientMeasureBox
-                    .getBox(new BlockPos(0, 0, 0), DimensionType.OVERWORLD_ID);
+                    .getBox(new BlockPos(0, 0, 0), OVERWORLD_ID);
 
             assertThat(box.isFinished()).isFalse();
 
@@ -118,6 +119,7 @@ public class ClientMeasureBoxTest {
 
             assertThat(box.isFinished()).isTrue();
         }
+
     }
 
     @ParameterizedTest
@@ -125,8 +127,8 @@ public class ClientMeasureBoxTest {
             "green", "blue" })
     void testSetColor(final DyeColor color) {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
-            final ClientMeasureBox box = ClientMeasureBox
-                    .getBox(new BlockPos(0, 0, 0), DimensionType.OVERWORLD_ID);
+            final ClientMeasureBox box = ClientMeasureBox.getBox(new BlockPos(0, 0, 0),
+                    OVERWORLD_ID);
 
             box.setColor(color);
 
@@ -146,7 +148,7 @@ public class ClientMeasureBoxTest {
             BlockPos bp4, BlockPos bp5, BlockPos bp6, BlockPos bp7) {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
             final ClientMeasureBox box = ClientMeasureBox
-                    .getBox(bp0, DimensionType.OVERWORLD_ID);
+                    .getBox(bp0, OVERWORLD_ID);
 
             box.setBlockEnd(bp1);
 
@@ -170,7 +172,7 @@ public class ClientMeasureBoxTest {
     void testLoosenCorner(BlockPos bp0, BlockPos bp1, BlockPos newBp0) {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
             final ClientMeasureBox box = ClientMeasureBox
-                    .getBox(bp0, DimensionType.OVERWORLD_ID);
+                    .getBox(bp0, OVERWORLD_ID);
 
             box.setBlockEnd(bp1);
             box.setFinished();
@@ -192,7 +194,7 @@ public class ClientMeasureBoxTest {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
             ClientMeasureBox.setColorIndex(color.getId());
             final ClientMeasureBox box = ClientMeasureBox
-                    .getBox(new BlockPos(0, 0, 0), DimensionType.OVERWORLD_ID);
+                    .getBox(new BlockPos(0, 0, 0), OVERWORLD_ID);
 
             assertThat(box.getColor()).isEqualTo(color);
         }

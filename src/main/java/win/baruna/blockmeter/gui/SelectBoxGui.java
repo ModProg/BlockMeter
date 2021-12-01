@@ -38,7 +38,7 @@ public class SelectBoxGui extends Screen {
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
                     box.getColor().getColorComponents(), false, true, button -> {
                         box.loosenCorner(block);
-                        MinecraftClient.getInstance().openScreen((Screen) null);
+                        MinecraftClient.getInstance().setScreen((Screen) null);
                     }));
 
         }
@@ -46,7 +46,7 @@ public class SelectBoxGui extends Screen {
         this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
                 this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING, BUTTONWIDTH,
                 BUTTONHEIGHT, new TranslatableText("gui.cancel"), button -> {
-                    MinecraftClient.getInstance().openScreen((Screen) null);
+                    MinecraftClient.getInstance().setScreen((Screen) null);
                 }));
     }
 

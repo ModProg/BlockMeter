@@ -270,7 +270,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
             if (keyBindingMenu.wasPressed() && active
                     && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
-                MinecraftClient.getInstance().openScreen((Screen) this.quickMenu);
+                MinecraftClient.getInstance().setScreen((Screen) this.quickMenu);
             }
 
             // Updates Selection preview
@@ -320,7 +320,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     default:
                         this.selectBoxGui.setBoxes(boxes);
                         this.selectBoxGui.setBlock(block);
-                        MinecraftClient.getInstance().openScreen((Screen) this.selectBoxGui);
+                        MinecraftClient.getInstance().setScreen((Screen) this.selectBoxGui);
                         break;
                     }
                 } else {

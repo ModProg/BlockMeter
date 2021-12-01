@@ -147,7 +147,7 @@ public class ClientMeasureBox extends MeasureBox {
 
         stack.push();
         stack.translate(-pos.x, -pos.y, -pos.z);
-        final Matrix4f model = stack.peek().getModel();
+        final Matrix4f model = stack.peek().getPositionMatrix();
 
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
@@ -351,7 +351,7 @@ public class ClientMeasureBox extends MeasureBox {
         stack.scale(size, -size, 0.001f);
         final int width = textRenderer.getWidth(literalText);
         stack.translate((-width / 2), 0.0, 0.0);
-        final Matrix4f model = stack.peek().getModel();
+        final Matrix4f model = stack.peek().getPositionMatrix();
         final BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 
         int textColor = color.getSignColor();

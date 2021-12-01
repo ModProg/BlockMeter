@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "0.8-SNAPSHOT"
+    id "fabric-loom" version "0.10-SNAPSHOT"
 	id "org.ajoberstar.grgit" version "3.1.1"
 }
 
@@ -61,16 +61,22 @@ def getBranch() {
 	return branch.substring(branch.lastIndexOf("/") + 1)
 }
 
-minecraft {
-    refmapName = "blockmeter-refmap.json";
+loom {
+    mixin.defaultRefmapName = "blockmeter-refmap.json";
 }
 
 processResources {
-    inputs.property "version", project.version
+  duplicatesStrategy "warn"
+	inputs.property "version", project.projectVersion
 
-    from("fabric.mod.json") {
-        expand "version": project.version
-    }
+  from(sourceSets.main.resources.srcDirs) {
+		include "fabric.mod.json"
+		expand "version": project.projectVersion
+	}
+
+	from(sourceSets.main.resources.srcDirs) {
+		exclude "fabric.mod.json"
+	}
 }
 
 dependencies {

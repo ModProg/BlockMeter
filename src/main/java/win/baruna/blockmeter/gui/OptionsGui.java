@@ -47,7 +47,7 @@ public class OptionsGui extends Screen {
                             final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
                             if (currentBox != null)
                                 currentBox.setColor(DyeColor.byId(colorIndex));
-                            MinecraftClient.getInstance().openScreen((Screen) null);
+                            MinecraftClient.getInstance().setScreen((Screen) null);
                         }));
             }
         }
@@ -58,7 +58,7 @@ public class OptionsGui extends Screen {
                         new TranslatableText(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
                     config.incrementColor = !config.incrementColor;
-                    MinecraftClient.getInstance().openScreen((Screen) null);
+                    MinecraftClient.getInstance().setScreen((Screen) null);
                     // Todo find a way to increment to a new Color if a box was created while
                     // incrementColor was disabled
                     BlockMeterClient.getConfigManager().save();
@@ -71,7 +71,7 @@ public class OptionsGui extends Screen {
                 }), button -> {
                     System.err.println("IDK WHAT YOU ARE DOING");
                     config.innerDiagonal = !config.innerDiagonal;
-                    MinecraftClient.getInstance().openScreen((Screen) null);
+                    MinecraftClient.getInstance().setScreen((Screen) null);
                     BlockMeterClient.getConfigManager().save();
                 }));
 
@@ -82,7 +82,7 @@ public class OptionsGui extends Screen {
                 }), button -> {
                     System.err.println("IDK WHAT YOU ARE DOING");
                     config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
-                    MinecraftClient.getInstance().openScreen((Screen) null);
+                    MinecraftClient.getInstance().setScreen((Screen) null);
                     BlockMeterClient.getConfigManager().save();
                 }));
     }

@@ -7,6 +7,8 @@
     "blockmeter.clearAll": "已清除所有方块计量框",
     "blockmeter.showOthers": "显示其他玩家的方块计量框: %s",
 
+    "blockmeter.boxToString": "起点: (%d, %d, %d), 终点: (%d, %d, %d)",
+
     "category.blockmeter.key": "方块计量表",
 
     "key.blockmeter.assign": "切换方块计量表",

@@ -7,6 +7,8 @@
     "blockmeter.clearAll": "已清除所有方块计量框",
     "blockmeter.showOthers": "显示其他玩家的方块计量框: %s",
 
+    "blockmeter.boxToString": "起点: (%d, %d, %d), 终点: (%d, %d, %d)",
+
     "category.blockmeter.key": "方块计量表",
 
     "key.blockmeter.assign": "切换方块计量表",
@@ -28,4 +30,5 @@
     "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "插件（Bukkit）或mod（Fabric）。",
     
     "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "在方块计量表被禁用时显示方块计量框"
+    "text.autoconfig.blockmeter.option.backgroundForLabels": "彩色的标记背景"
 }

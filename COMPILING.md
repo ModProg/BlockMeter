@@ -1,6 +1,6 @@
 # TL;DR
 
-- Get a version of gradle that's at least 4.10.2
+- Get a version of gradle that's at least 4.10.2 or use `./gradlew`
 - `git clone <repo>`
 - `git branch -r`  to see available branches
 - `git checkout fabric_1_16` to select your branch
@@ -12,15 +12,6 @@
 
 Because I created several mods, which have some things in common, the structure of my mods is a bit different from the example mod that Fabric or Forge provide.
 
-In particular, I don't want the gradle files to be duplicated into every single mod repository, and some common files that contain version info for Fabric, its tools, and some library mods, have been moved to a (common) submodule.
-
-# Prerequisites
-
-You need a gradle installation which does not come with the mod. At the time of this writing, the version of gradle used is 4.10.2. Gradle 6.5 has been tested to work too, so versions between those *should* as well.
-
-You might already have gradle installed, especially when you're running Linux - if so, make sure it's new enough. For example, Ubuntu 18.04 has gradle 4.4.1 which is not. Run `gradle -version` to check.
-
-If you have the Fabric example mod installed, you can use the gradle installation from there. Else, download a release from https://gradle.org/releases/ (binary only is sufficient) and unpack it somewhere.
 
 # Versionfiles submodule
 

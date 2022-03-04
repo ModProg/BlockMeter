@@ -36,3 +36,4 @@ jobs:
       with:
         gradle-version: ${{ matrix.gradle }}
         arguments: build
+        cache-disabled: ${{ env.ACT }}

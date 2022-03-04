@@ -5,9 +5,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ fabric_1_16 ]
+    branches: [ main ]
   pull_request:
-    branches: [ fabric_1_16 ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 11]
+        java: [ 17 ]
         gradle: [ 5.6.4, 6.5.1]
     
     name: Java ${{ matrix.java }}, Gradle ${{ matrix.gradle }}

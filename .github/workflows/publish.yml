@@ -10,6 +10,23 @@ jobs:
     name: Publish Minecraft Mods
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: "temurin"
+          java-version: "1.18"
+
+      - name: Gradle Build
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          arguments: build
+
       - uses: Kir-Antipov/mc-publish@v3.0
         with:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}

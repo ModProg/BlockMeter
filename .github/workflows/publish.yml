@@ -27,7 +27,7 @@ jobs:
           gradle-version: wrapper
           arguments: build
 
-      - uses: Kir-Antipov/mc-publish@v3.0
+      - uses: Kir-Antipov/mc-publish@v2.1
         with:
           modrinth-id: oGU9LXKC
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}

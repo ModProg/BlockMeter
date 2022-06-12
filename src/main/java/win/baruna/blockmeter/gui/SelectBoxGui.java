@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
@@ -28,7 +28,7 @@ public class SelectBoxGui extends Screen {
 
         for (int i = 0; i < boxes.length; i++) {
             final ClientMeasureBox box = boxes[i];
-            final TranslatableText text = new TranslatableText("blockmeter.boxToString",
+            final var text = Text.translatable("blockmeter.boxToString",
                     new Object[] { box.getBlockStart().getX(), box.getBlockStart().getY(), box.getBlockStart().getZ(),
                             box.getBlockEnd().getX(), box.getBlockEnd().getY(), box.getBlockEnd().getZ() });
 
@@ -45,7 +45,7 @@ public class SelectBoxGui extends Screen {
 
         this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
                 this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING, BUTTONWIDTH,
-                BUTTONHEIGHT, new TranslatableText("gui.cancel"), button -> {
+                BUTTONHEIGHT, Text.translatable("gui.cancel"), button -> {
                     MinecraftClient.getInstance().setScreen((Screen) null);
                 }));
     }
@@ -57,7 +57,7 @@ public class SelectBoxGui extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 

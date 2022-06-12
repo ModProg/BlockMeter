@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        java: [ 17 ]
+        java: [ 17, 18 ]
         gradle: [ wrapper, current]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}

@@ -1,0 +1,17 @@
+name: Publish on Modrinth and Curseforge
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  Publish:
+    runs-on: ubuntu-latest
+    name: Publish Minecraft Mods
+
+    steps:
+      - uses: Kir-Antipov/mc-publish@v3.0
+        with:
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

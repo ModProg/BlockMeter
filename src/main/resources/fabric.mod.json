@@ -2,34 +2,32 @@
   "schemaVersion": 1,
   "id": "blockmeter",
   "version": "${version}",
-  "environment": "*",    
+  "environment": "*",
   "entrypoints": {
-    "client": [ "win.baruna.blockmeter.BlockMeterClient" ],
-    "main": [ "win.baruna.blockmeter.BlockMeterServer" ],
+    "client": ["win.baruna.blockmeter.BlockMeterClient"],
+    "main": ["win.baruna.blockmeter.BlockMeterServer"],
     "modmenu": ["win.baruna.blockmeter.gui.ModMenu"]
   },
   "custom": {
-        "xxxmodmenu:clientsideOnly": true,
-        "modupdater": {
-            "strategy": "json",
-            "url": "https://raw.githubusercontent.com/gbl/ModVersionInfo/master/BlockMeter.json"
-        }
+    "xxxmodmenu:clientsideOnly": true,
+    "modmanager": {
+      "modrinth": "oGU9LXKC",
+      "curseforge": "394468"
+    }
   },
-  "mixins": [
-    "blockmeter.mixins.json"
-  ],
+  "mixins": ["blockmeter.mixins.json"],
   "depends": {
     "fabricloader": ">=0.4.0",
-    "fabric": "*"
+    "fabric": "*",
+    "minecraft": "1.19"
   },
-    "recommends": {
-      "modmenu" : "*",
-      "modupdater": ">=1.1.7"
-    },    
+  "recommends": {
+    "modmenu": "*"
+  },
   "name": "Block Meter",
   "description": "A simple mod to measure your blocks!",
   "icon": "icon.png",
-  "authors": [ "MadeOke", "Giselbaer", "ModProg" ],
+  "authors": ["MadeOke", "Giselbaer", "ModProg"],
 
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric",

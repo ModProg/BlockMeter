@@ -14,9 +14,8 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
@@ -54,8 +53,8 @@ public class OptionsGui extends Screen {
 
         this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10,
                 BUTTONWIDTH, 20,
-                new TranslatableText("blockmeter.keepColor", new Object[] {
-                        new TranslatableText(config.incrementColor ? "options.off" : "options.on")
+                Text.translatable("blockmeter.keepColor", new Object[] {
+                        Text.translatable(config.incrementColor ? "options.off" : "options.on")
                 }), button -> {
                     config.incrementColor = !config.incrementColor;
                     MinecraftClient.getInstance().setScreen((Screen) null);
@@ -66,8 +65,8 @@ public class OptionsGui extends Screen {
 
         this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32,
                 BUTTONWIDTH, 20,
-                new TranslatableText("blockmeter.diagonal", new Object[] {
-                        new TranslatableText(config.innerDiagonal ? "options.on" : "options.off")
+                Text.translatable("blockmeter.diagonal", new Object[] {
+                        Text.translatable(config.innerDiagonal ? "options.on" : "options.off")
                 }), button -> {
                     System.err.println("IDK WHAT YOU ARE DOING");
                     config.innerDiagonal = !config.innerDiagonal;
@@ -77,8 +76,8 @@ public class OptionsGui extends Screen {
 
         this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54,
                 BUTTONWIDTH, 20,
-                new TranslatableText("blockmeter.showOthers", new Object[] {
-                        new TranslatableText(config.showOtherUsersBoxes ? "options.on" : "options.off")
+                Text.translatable("blockmeter.showOthers", new Object[] {
+                        Text.translatable(config.showOtherUsersBoxes ? "options.on" : "options.off")
                 }), button -> {
                     System.err.println("IDK WHAT YOU ARE DOING");
                     config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
@@ -94,7 +93,7 @@ public class OptionsGui extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 
@@ -127,7 +126,7 @@ class ColorButton extends ButtonWidget {
 
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,
             final boolean selected, boolean texture, PressAction onPress) {
-        super(x, y, width, height, new LiteralText(""), onPress);
+        super(x, y, width, height, Text.literal(""), onPress);
         this.selected = false;
         this.color = color;
         this.x = x + 2;

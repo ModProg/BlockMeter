@@ -18,7 +18,6 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -332,7 +331,7 @@ public class ClientMeasureBox extends MeasureBox {
         @SuppressWarnings("resource")
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-        final LiteralText literalText = new LiteralText(text);
+        final var literalText = Text.literal(text);
 
         float size = 0.03f;
         final int constDist = 10;

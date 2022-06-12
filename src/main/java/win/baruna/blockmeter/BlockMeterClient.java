@@ -29,7 +29,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -94,7 +93,6 @@ public class BlockMeterClient implements ClientModInitializer {
      * The QuickMenu for changing of Color etc.
      */
     private OptionsGui quickMenu;
-
 
     /**
      * The QuickMenu for selecting on of multiple Boxes.
@@ -246,24 +244,24 @@ public class BlockMeterClient implements ClientModInitializer {
                 if (Screen.hasShiftDown()) {
                     if (undo())
                         e.player.sendMessage(
-                                new TranslatableText("blockmeter.clearLast"),
+                                Text.translatable("blockmeter.clearLast"),
                                 true);
                 } else if (Screen.hasControlDown()) {
                     if (clear())
                         e.player.sendMessage(
-                                new TranslatableText("blockmeter.clearAll"),
+                                Text.translatable("blockmeter.clearAll"),
                                 true);
                 } else if (this.active) {
                     disable();
-                    e.player.sendMessage(new TranslatableText("blockmeter.toggle.off", new Object[0]), true);
+                    e.player.sendMessage(Text.translatable("blockmeter.toggle.off", new Object[0]), true);
                 } else {
                     active = true;
                     ItemStack itemStack = e.player.getMainHandStack();
                     currentItem = itemStack.getItem();
                     e.player.sendMessage(
-                            new TranslatableText("blockmeter.toggle.on",
+                            Text.translatable("blockmeter.toggle.on",
                                     new Object[] {
-                                            new TranslatableText(itemStack.getTranslationKey(), new Object[0]) }),
+                                            Text.translatable(itemStack.getTranslationKey(), new Object[0]) }),
                             true);
                 }
             }

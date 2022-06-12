@@ -31,6 +31,8 @@ jobs:
         with:
           modrinth-id: oGU9LXKC
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 369343
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          curseforge-id: 394468
+
           github-token: ${{ secrets.GITHUB_TOKEN }}

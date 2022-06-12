@@ -12,7 +12,7 @@
     "xxxmodmenu:clientsideOnly": true,
     "modmanager": {
       "modrinth": "oGU9LXKC",
-      "curseforge": "394468"
+      "curseforge": "369343"
     }
   },
   "mixins": ["blockmeter.mixins.json"],

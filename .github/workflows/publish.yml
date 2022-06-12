@@ -8,6 +8,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish Minecraft Mods
+    environment: publish
 
     steps:
       - name: Checkout Repository

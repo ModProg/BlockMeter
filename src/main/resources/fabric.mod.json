@@ -10,9 +10,13 @@
   },
   "custom": {
     "xxxmodmenu:clientsideOnly": true,
+    "mc-publish": {
+      "curseforge": 369343,
+      "modrinth": "oGU9LXKC"
+    },
     "modmanager": {
-      "modrinth": "oGU9LXKC",
-      "curseforge": "369343"
+      "curseforge": 369343,
+      "modrinth": "oGU9LXKC"
     }
   },
   "mixins": ["blockmeter.mixins.json"],

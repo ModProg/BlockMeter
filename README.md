@@ -26,14 +26,8 @@ In particular, I don't want the gradle files to be duplicated into every single 
 
 | Software       | Version              |
 | -------------- | -------------------- |
-| Java (OpenJDK) | 8, 11                |
-| Gradle         | 4.10.2, 5.6.4, 6.5.1 |
-
-You need a gradle installation which does not come with the mod. At the time of this writing, the version of gradle used is 4.10.2. Gradle 6.5 has been tested to work too, so versions between those _should_ as well.
-
-You might already have gradle installed, especially when you're running Linux - if so, make sure it's new enough. For example, Ubuntu 18.04 has gradle 4.4.1 which is not. Run `gradle -version` to check.
-
-If you have the Fabric example mod installed, you can use the gradle installation from there. Else, download a release from https://gradle.org/releases/ (binary only is sufficient) and unpack it somewhere.
+| Java (OpenJDK) | 17, 18               |
+| Gradle         | ./gradlew or current |
 
 ## Versionfiles submodule
 

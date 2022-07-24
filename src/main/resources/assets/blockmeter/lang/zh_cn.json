@@ -29,6 +29,6 @@
     "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[1]": "这些服务器必须安装方块计量表的",
     "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "插件（Bukkit）或mod（Fabric）。",
     
-    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "在方块计量表被禁用时显示方块计量框"
+    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "在方块计量表被禁用时显示方块计量框",
     "text.autoconfig.blockmeter.option.backgroundForLabels": "彩色的标记背景"
 }

@@ -1,4 +1,6 @@
-![Java CI with Gradle](https://github.com/ModProg/BlockMeter/workflows/Java%20CI%20with%20Gradle/badge.svg)
+![Java CI with Gradle](https://github.com/ModProg/BlockMeter/workflows/Java%20CI%20with%20Gradle/badge.svg) 
+[![Modrinth](https://img.shields.io/modrinth/dt/blockmeter?label=Modrinth)](https://modrinth.com/mod/blockmeter)
+[![Github](https://cf.way2muchnoise.eu/blockmeterfabric.svg)](https://www.curseforge.com/minecraft/mc-mods/blockmeterfabric)
 
 # BlockMeter
 

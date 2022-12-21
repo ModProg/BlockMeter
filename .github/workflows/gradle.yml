@@ -47,3 +47,5 @@ jobs:
   built:
     runs-on: ubuntu-latest
     needs: [build]
+    steps:
+      - run: exit 0

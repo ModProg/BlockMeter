@@ -23,9 +23,9 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Matrix4f;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
@@ -157,7 +157,7 @@ public class ClientMeasureBox extends MeasureBox {
         // FIXME This actually does nothing
         final float a = 0.8f;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         buffer.begin(DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(r, g, b, a)
@@ -345,11 +345,11 @@ public class ClientMeasureBox extends MeasureBox {
 
         stack.push();
         stack.translate(x, y + 0.15, z);
-        stack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F - yaw));
-        stack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-pitch));
+        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - yaw));
+        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-pitch));
         stack.scale(size, -size, 0.001f);
         final int width = textRenderer.getWidth(literalText);
-        stack.translate((-width / 2), 0.0, 0.0);
+        stack.translate((-width / 2f), 0.0, 0.0);
         final Matrix4f model = stack.peek().getPositionMatrix();
         final BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 

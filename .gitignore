@@ -4,6 +4,7 @@ bin/
 logs
 
 # Java Settings
+.idea/
 .project
 .settings/
 .classpath

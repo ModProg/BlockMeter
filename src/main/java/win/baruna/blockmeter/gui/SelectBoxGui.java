@@ -29,8 +29,8 @@ public class SelectBoxGui extends Screen {
         for (int i = 0; i < boxes.length; i++) {
             final ClientMeasureBox box = boxes[i];
             final var text = Text.translatable("blockmeter.boxToString",
-                    new Object[] { box.getBlockStart().getX(), box.getBlockStart().getY(), box.getBlockStart().getZ(),
-                            box.getBlockEnd().getX(), box.getBlockEnd().getY(), box.getBlockEnd().getZ() });
+                    box.getBlockStart().getX(), box.getBlockStart().getY(), box.getBlockStart().getZ(),
+                    box.getBlockEnd().getX(), box.getBlockEnd().getY(), box.getBlockEnd().getZ());
 
             // text.setStyle(text.getStyle().withColor(TextColor.fromRgb(box.getColor().getSignColor())));
 
@@ -43,11 +43,10 @@ public class SelectBoxGui extends Screen {
 
         }
 
-        this.addDrawableChild(new ButtonWidget(this.width / 2 - BUTTONWIDTH / 2,
-                this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING, BUTTONWIDTH,
-                BUTTONHEIGHT, Text.translatable("gui.cancel"), button -> {
-                    MinecraftClient.getInstance().setScreen((Screen) null);
-                }));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"), button -> MinecraftClient.getInstance().setScreen(null))
+                .position(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING)
+                .size(BUTTONWIDTH, BUTTONHEIGHT)
+                .build());
     }
 
     @Override

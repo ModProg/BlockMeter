@@ -44,3 +44,6 @@ jobs:
         gradle-version: ${{ matrix.gradle }}
         arguments: build
         cache-disabled: true
+  built:
+    runs-on: ubuntu-latest
+    needs: [build]

@@ -1,12 +1,5 @@
 package win.baruna.blockmeter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.lwjgl.glfw.GLFW;
-
 import io.netty.buffer.Unpooled;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigManager;
@@ -14,6 +7,7 @@ import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -35,9 +29,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.lwjgl.glfw.GLFW;
 import win.baruna.blockmeter.gui.OptionsGui;
 import win.baruna.blockmeter.gui.SelectBoxGui;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BlockMeterClient implements ClientModInitializer {
     /**
@@ -47,7 +47,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Accessor for the BlockMeterClient Instance
-     * 
+     *
      * @return running Instance of BlockMeterClient
      */
     public static BlockMeterClient getInstance() {
@@ -61,7 +61,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Accessor for the ModConfigManager
-     * 
+     *
      * @return ConfigManager for handling the Config
      */
     public static ConfigManager<ModConfig> getConfigManager() {
@@ -124,6 +124,7 @@ public class BlockMeterClient implements ClientModInitializer {
     public void reset() {
         otherUsersBoxes = null;
         boxes.clear();
+        disable();
 
         // Resets Color to always start with white in an other world
         ModConfig cfg = confMgr.getConfig();
@@ -220,7 +221,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Returns the currently active box
-     * 
+     *
      * @return currently open box or null if none
      */
     public ClientMeasureBox getCurrentBox() {
@@ -260,8 +261,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     currentItem = itemStack.getItem();
                     e.player.sendMessage(
                             Text.translatable("blockmeter.toggle.on",
-                                    new Object[] {
-                                            Text.translatable(itemStack.getTranslationKey(), new Object[0]) }),
+                                    Text.translatable(itemStack.getTranslationKey(), new Object[0])),
                             true);
                 }
             }
@@ -287,15 +287,16 @@ public class BlockMeterClient implements ClientModInitializer {
 
         UseBlockCallback.EVENT
                 .register((playerEntity, world, hand, hitResult) -> this.onBlockMeterClick(playerEntity, hitResult));
+        ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
     }
 
     /**
      * Handles the right click Event for creating and confirming new Measuring-Boxes
-     * 
+     *
      * @param playerEntity the player object
      * @param hitResult
      * @return PASS if not active or wrong item, FAIL when successful, to not send
-     *         the event to the server
+     * the event to the server
      */
     private ActionResult onBlockMeterClick(final PlayerEntity playerEntity, final BlockHitResult hitResult) {
         if (!this.active) {
@@ -310,16 +311,16 @@ public class BlockMeterClient implements ClientModInitializer {
                 if (Screen.hasShiftDown()) {
                     ClientMeasureBox[] boxes = findBoxes(block);
                     switch (boxes.length) {
-                    case 0:
-                        break;
-                    case 1:
-                        boxes[0].loosenCorner(block);
-                        break;
-                    default:
-                        this.selectBoxGui.setBoxes(boxes);
-                        this.selectBoxGui.setBlock(block);
-                        MinecraftClient.getInstance().setScreen((Screen) this.selectBoxGui);
-                        break;
+                        case 0:
+                            break;
+                        case 1:
+                            boxes[0].loosenCorner(block);
+                            break;
+                        default:
+                            this.selectBoxGui.setBoxes(boxes);
+                            this.selectBoxGui.setBlock(block);
+                            MinecraftClient.getInstance().setScreen((Screen) this.selectBoxGui);
+                            break;
                     }
                 } else {
                     final ClientMeasureBox box = ClientMeasureBox.getBox(block,
@@ -339,7 +340,7 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Finds a box to be edited when selecting this block
-     * 
+     *
      * @param block selected block
      * @return Box to be edited
      */
@@ -365,7 +366,7 @@ public class BlockMeterClient implements ClientModInitializer {
      * handles the BoxList of other Players
      */
     private void handleServerBoxList(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf data,
-            PacketSender responseSender) {
+                                     PacketSender responseSender) {
         Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
         int playerCount = data.readInt();
         for (int i = 0; i < playerCount; i++) {

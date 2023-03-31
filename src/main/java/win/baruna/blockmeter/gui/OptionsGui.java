@@ -142,7 +142,6 @@ class ColorButton extends ButtonWidget {
     public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
         super.render(stack, int_1, int_2, float_1);
 
-        RenderSystem.disableTexture();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
@@ -166,7 +165,6 @@ class ColorButton extends ButtonWidget {
                 .next();
         tessellator.draw();
 
-        RenderSystem.enableTexture();
 
         if (text != null) {
             boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;

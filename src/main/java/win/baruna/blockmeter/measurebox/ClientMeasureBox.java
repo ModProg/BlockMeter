@@ -1,24 +1,13 @@
 package win.baruna.blockmeter.measurebox;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -30,11 +19,15 @@ import org.joml.Matrix4f;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class ClientMeasureBox extends MeasureBox {
     private Box box;
 
     protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension,
-            final DyeColor color, final boolean finished, final int mode, final int orientation) {
+                               final DyeColor color, final boolean finished, final int mode, final int orientation) {
         super(blockStart, blockEnd, dimension, color, finished, mode, orientation);
         updateBoundingBox();
     }
@@ -52,7 +45,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Sets the second box corner
-     * 
+     *
      * @param block second corner position
      */
     public void setBlockEnd(final BlockPos block) {
@@ -62,7 +55,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * The current creation state of the MeasureBox
-     * 
+     *
      * @return true if MeasureBox is completed
      */
     public boolean isFinished() {
@@ -78,7 +71,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Sets the Color of the MeasureBox
-     * 
+     *
      * @param color Color to be applied
      */
     public void setColor(final DyeColor color) {
@@ -87,7 +80,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Tests if the block is on a corner of the box
-     * 
+     *
      * @param block Position to test
      * @return true if block is a corner
      */
@@ -100,7 +93,7 @@ public class ClientMeasureBox extends MeasureBox {
     /**
      * Loosens the selected Corner i.e. the opposite corner gets fixed, and the
      * current one can be moved
-     * 
+     *
      * @param block The corner to loosen, needs to be an actual corner of the box
      */
     public void loosenCorner(final BlockPos block) {
@@ -114,7 +107,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Renders the Box
-     * 
+     *
      * @param camera           rendering Camera
      * @param stack
      * @param currentDimension Dimension the Player currently is in
@@ -125,14 +118,14 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Renders the Box
-     * 
+     *
      * @param camera           rendering Camera
      * @param stack
      * @param currentDimension Dimension the Player currently is in
      * @param boxCreatorName   Name of the Player that created the Box
      */
     public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension,
-            final Text boxCreatorName) {
+                       final Text boxCreatorName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }
@@ -140,9 +133,8 @@ public class ClientMeasureBox extends MeasureBox {
 
         // FIXME This actually does nothing
         RenderSystem.lineWidth(2.0f);
-        
+
         RenderSystem.disableDepthTest();
-        RenderSystem.disableTexture();
         RenderSystem.disableBlend();
 
         stack.push();
@@ -211,7 +203,6 @@ public class ClientMeasureBox extends MeasureBox {
             tess.draw();
 
         }
-        RenderSystem.enableTexture();
         RenderSystem.lineWidth(1.0f);
 
         this.drawLengths(camera, stack, boxCreatorName);
@@ -239,7 +230,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Draws the length label
-     * 
+     *
      * @param camera         rendering Camera
      * @param stack
      * @param boxCreatorName Name of the Box creator
@@ -317,7 +308,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Draws a text with orientation and position
-     * 
+     *
      * @param stack
      * @param x
      * @param y
@@ -328,9 +319,8 @@ public class ClientMeasureBox extends MeasureBox {
      * @param playerPos
      */
     private void drawText(final MatrixStack stack, final double x, final double y, final double z, final float yaw,
-            final float pitch, final String text, final Vec3d playerPos) {
-        @SuppressWarnings("resource")
-        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+                          final float pitch, final String text, final Vec3d playerPos) {
+        @SuppressWarnings("resource") final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final var literalText = Text.literal(text);
 
@@ -380,7 +370,7 @@ public class ClientMeasureBox extends MeasureBox {
                 !conf.backgroundForLabels, // shadow
                 model, // matrix
                 immediate, // draw buffer
-                true, // seeThrough
+                TextRenderer.TextLayerType.SEE_THROUGH,
                 0, // backgroundColor => underlineColor,
                 15728880 // light
         );
@@ -402,7 +392,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Accessor for the currently selected color
-     * 
+     *
      * @return currently selected color
      */
     static private DyeColor getSelectedColor() {
@@ -417,7 +407,7 @@ public class ClientMeasureBox extends MeasureBox {
 
     /**
      * Parses a ClientMeasureBox from a PacketByteBuf
-     * 
+     *
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */

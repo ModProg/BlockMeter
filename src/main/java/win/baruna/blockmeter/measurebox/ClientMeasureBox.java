@@ -63,7 +63,7 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     /**
-     * Markes Box to be complete
+     * Marks Box to be complete
      */
     public void setFinished() {
         this.finished = true;
@@ -109,7 +109,6 @@ public class ClientMeasureBox extends MeasureBox {
      * Renders the Box
      *
      * @param camera           rendering Camera
-     * @param stack
      * @param currentDimension Dimension the Player currently is in
      */
     public void render(final Camera camera, final MatrixStack stack, final Identifier currentDimension) {
@@ -120,7 +119,6 @@ public class ClientMeasureBox extends MeasureBox {
      * Renders the Box
      *
      * @param camera           rendering Camera
-     * @param stack
      * @param currentDimension Dimension the Player currently is in
      * @param boxCreatorName   Name of the Player that created the Box
      */
@@ -223,8 +221,8 @@ public class ClientMeasureBox extends MeasureBox {
         final int by = this.blockEnd.getY();
         final int bz = this.blockEnd.getZ();
 
-        this.box = new Box((double) Math.min(ax, bx), (double) Math.min(ay, by), (double) Math.min(az, bz),
-                (double) (Math.max(ax, bx) + 1), (double) (Math.max(ay, by) + 1), (double) (Math.max(az, bz) + 1));
+        this.box = new Box(Math.min(ax, bx), Math.min(ay, by), Math.min(az, bz),
+                Math.max(ax, bx) + 1, Math.max(ay, by) + 1, Math.max(az, bz) + 1);
 
     }
 
@@ -232,7 +230,6 @@ public class ClientMeasureBox extends MeasureBox {
      * Draws the length label
      *
      * @param camera         rendering Camera
-     * @param stack
      * @param boxCreatorName Name of the Box creator
      */
     private void drawLengths(final Camera camera, final MatrixStack stack, final Text boxCreatorName) {
@@ -301,26 +298,17 @@ public class ClientMeasureBox extends MeasureBox {
             this.drawText(stack, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch,
                     playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + String.valueOf(lengthX), pos);
-        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + String.valueOf(lengthY), pos);
-        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + String.valueOf(lengthZ), pos);
+        this.drawText(stack, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + lengthX, pos);
+        this.drawText(stack, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + lengthY, pos);
+        this.drawText(stack, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + lengthZ, pos);
     }
 
     /**
      * Draws a text with orientation and position
-     *
-     * @param stack
-     * @param x
-     * @param y
-     * @param z
-     * @param yaw
-     * @param pitch
-     * @param text
-     * @param playerPos
      */
     private void drawText(final MatrixStack stack, final double x, final double y, final double z, final float yaw,
                           final float pitch, final String text, final Vec3d playerPos) {
-        @SuppressWarnings("resource") final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final var literalText = Text.literal(text);
 
@@ -415,7 +403,7 @@ public class ClientMeasureBox extends MeasureBox {
         return new ClientMeasureBox(attachedData);
     }
 
-    private class Line implements Comparable<Line> {
+    private static class Line implements Comparable<Line> {
         Box line;
         double distance;
 

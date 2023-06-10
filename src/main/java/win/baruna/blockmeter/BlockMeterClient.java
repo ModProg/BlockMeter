@@ -81,7 +81,7 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * The List of Measuring-Boxes currently created by the current User
      */
-    private List<ClientMeasureBox> boxes;
+    private final List<ClientMeasureBox> boxes;
 
     /**
      * A Map of Lists of Boxes currently created by other Users, with Text being the
@@ -92,12 +92,12 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * The QuickMenu for changing of Color etc.
      */
-    private OptionsGui quickMenu;
+    private final OptionsGui quickMenu;
 
     /**
      * The QuickMenu for selecting on of multiple Boxes.
      */
-    private SelectBoxGui selectBoxGui;
+    private final SelectBoxGui selectBoxGui;
 
     public BlockMeterClient() {
         active = false;
@@ -173,20 +173,19 @@ public class BlockMeterClient implements ClientModInitializer {
     public void renderOverlay(float partialTicks, MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        final Identifier currentDimension = client.player.world.getRegistryKey().getValue();
+        assert client.player != null;
+        final Identifier currentDimension = client.player.clientWorld.getRegistryKey().getValue();
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
         // MEH! but this seems to be needed to get the first background
         // rectangle
-        client.textRenderer.draw(stack, "XXX", -100, -100, 0);
+        //        client.textRenderer.draw("XXX", stack,  -100, -100, 0);
 
         if (this.active || cfg.showBoxesWhenDisabled)
             if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
-                    this.otherUsersBoxes.forEach((playerText, boxList) -> {
-                        boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText));
-                    });
+                    this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText)));
                     this.boxes.forEach(box -> {
                         if (!box.isFinished())
                             box.render(camera, stack, currentDimension);
@@ -268,14 +267,14 @@ public class BlockMeterClient implements ClientModInitializer {
 
             if (keyBindingMenu.wasPressed() && active
                     && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
-                MinecraftClient.getInstance().setScreen((Screen) this.quickMenu);
+                MinecraftClient.getInstance().setScreen(this.quickMenu);
             }
 
             // Updates Selection preview
             if (this.active && this.boxes.size() > 0) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
-                    final HitResult rayHit = e.player.raycast((double) e.interactionManager.getReachDistance(), 1.0f,
+                    final HitResult rayHit = e.player.raycast(e.interactionManager.getReachDistance(), 1.0f,
                             false);
                     if (rayHit.getType() == HitResult.Type.BLOCK) {
                         final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
@@ -319,12 +318,12 @@ public class BlockMeterClient implements ClientModInitializer {
                         default:
                             this.selectBoxGui.setBoxes(boxes);
                             this.selectBoxGui.setBlock(block);
-                            MinecraftClient.getInstance().setScreen((Screen) this.selectBoxGui);
+                            MinecraftClient.getInstance().setScreen(this.selectBoxGui);
                             break;
                     }
                 } else {
                     final ClientMeasureBox box = ClientMeasureBox.getBox(block,
-                            playerEntity.world.getRegistryKey().getValue());
+                            playerEntity.getWorld().getRegistryKey().getValue());
                     this.boxes.add(box);
                 }
             } else {
@@ -356,8 +355,8 @@ public class BlockMeterClient implements ClientModInitializer {
             return;
         PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         passedData.writeInt(boxes.size());
-        for (int i = 0; i < boxes.size(); i++) {
-            boxes.get(i).writePacketBuf(passedData);
+        for (ClientMeasureBox box : boxes) {
+            box.writePacketBuf(passedData);
         }
         ClientPlayNetworking.send(BlockMeter.C2SPacketIdentifier, passedData);
     }
@@ -372,15 +371,13 @@ public class BlockMeterClient implements ClientModInitializer {
         for (int i = 0; i < playerCount; i++) {
             Text playerName = data.readText();
             int boxCount = data.readInt();
-            List<ClientMeasureBox> boxes = new ArrayList<ClientMeasureBox>(boxCount);
+            List<ClientMeasureBox> boxes = new ArrayList<>(boxCount);
             for (int j = 0; j < boxCount; j++) {
                 boxes.add(ClientMeasureBox.fromPacketByteBuf(data));
             }
             receivedBoxes.put(playerName, boxes);
         }
-        client.executeTask(() -> {
-            otherUsersBoxes = receivedBoxes;
-        });
+        client.executeTask(() -> otherUsersBoxes = receivedBoxes);
     }
 
 }

@@ -1,19 +1,18 @@
 package win.baruna.blockmeter.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import me.shedaniel.math.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.VertexFormat.DrawMode;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -46,48 +45,48 @@ public class OptionsGui extends Screen {
                             final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
                             if (currentBox != null)
                                 currentBox.setColor(DyeColor.byId(colorIndex));
-                            MinecraftClient.getInstance().setScreen((Screen) null);
+                            MinecraftClient.getInstance().setScreen(null);
                         }));
             }
         }
 
         this.addDrawableChild(new ButtonWidget.Builder(
                 Text.translatable("blockmeter.keepColor", Text.translatable(config.incrementColor ? "options.off" : "options.on")), button -> {
-                    config.incrementColor = !config.incrementColor;
-                    MinecraftClient.getInstance().setScreen((Screen) null);
-                    // Todo find a way to increment to a new Color if a box was created while
-                    // incrementColor was disabled
-                    BlockMeterClient.getConfigManager().save();
-                })
+            config.incrementColor = !config.incrementColor;
+            MinecraftClient.getInstance().setScreen(null);
+            // Todo find a way to increment to a new Color if a box was created while
+            // incrementColor was disabled
+            BlockMeterClient.getConfigManager().save();
+        })
                 .position(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 10)
                 .size(BUTTONWIDTH, 20)
                 .build());
 
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.diagonal", Text.translatable(config.innerDiagonal ? "options.on" : "options.off")), button -> {
-                    System.err.println("IDK WHAT YOU ARE DOING");
-                    config.innerDiagonal = !config.innerDiagonal;
-                    MinecraftClient.getInstance().setScreen((Screen) null);
-                    BlockMeterClient.getConfigManager().save();
-                })
+            System.err.println("IDK WHAT YOU ARE DOING");
+            config.innerDiagonal = !config.innerDiagonal;
+            MinecraftClient.getInstance().setScreen(null);
+            BlockMeterClient.getConfigManager().save();
+        })
                 .position(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32)
                 .size(BUTTONWIDTH, 20)
                 .build());
 
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.showOthers", Text.translatable(config.showOtherUsersBoxes ? "options.on" : "options.off")), button -> {
-                    System.err.println("IDK WHAT YOU ARE DOING");
-                    config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
-                    MinecraftClient.getInstance().setScreen((Screen) null);
-                    BlockMeterClient.getConfigManager().save();
-                })
+            System.err.println("IDK WHAT YOU ARE DOING");
+            config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
+            MinecraftClient.getInstance().setScreen(null);
+            BlockMeterClient.getConfigManager().save();
+        })
                 .position(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54)
                 .size(BUTTONWIDTH, 20)
                 .build());
     }
 
     @Override
-    public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
-        super.renderBackground(stack);
-        super.render(stack, int_1, int_2, float_1);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -108,8 +107,8 @@ class ColorButton extends ButtonWidget {
     MutableText text;
 
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label,
-            final float[] color,
-            final boolean selected, boolean texture, PressAction onPress) {
+                final float[] color,
+                final boolean selected, boolean texture, PressAction onPress) {
         this(x, y, width, height, label, Color.ofRGB(color[0], color[1], color[2]), selected, texture, onPress);
     }
 
@@ -123,7 +122,7 @@ class ColorButton extends ButtonWidget {
     }
 
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,
-            final boolean selected, boolean texture, PressAction onPress) {
+                final boolean selected, boolean texture, PressAction onPress) {
         super(x, y, width, height, Text.literal(""), onPress, DEFAULT_NARRATION_SUPPLIER);
         this.selected = false;
         this.color = color;
@@ -139,8 +138,8 @@ class ColorButton extends ButtonWidget {
     }
 
     @Override
-    public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
-        super.render(stack, int_1, int_2, float_1);
+    public void render(DrawContext context, final int int_1, final int int_2, final float float_1) {
+        super.render(context, int_1, int_2, float_1);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
@@ -172,11 +171,11 @@ class ColorButton extends ButtonWidget {
             final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             int text_width = textRenderer.getWidth(text);
             if (dark || texture)
-                textRenderer.drawWithShadow(stack, text, x + width / 2f - text_width / 2f, y + height / 2f - 4, 0xFFFFFF);
+                context.drawText(textRenderer, text.asOrderedText(), x + width / 2 - text_width / 2, y + height / 2 - 4, 0xFFFFFF, true);
             else {
                 // shadow
-                textRenderer.draw(stack, text, x + width / 2f - text_width / 2f + 1, y + height / 2f - 3, 0xAAAAAA);
-                textRenderer.draw(stack, text, x + width / 2f - text_width / 2f, y + height / 2f - 4, 0);
+                context.drawText(textRenderer, text, x + width / 2 - text_width / 2 + 1, y + height / 2 - 3, 0xAAAAAA, false);
+                context.drawText(textRenderer, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0, false);
             }
         }
     }

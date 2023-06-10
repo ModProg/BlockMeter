@@ -1,11 +1,10 @@
 package win.baruna.blockmeter.gui;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
@@ -39,7 +38,7 @@ public class SelectBoxGui extends Screen {
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
                     box.getColor().getColorComponents(), false, true, button -> {
                         box.loosenCorner(block);
-                        MinecraftClient.getInstance().setScreen((Screen) null);
+                        MinecraftClient.getInstance().setScreen(null);
                     }));
 
         }
@@ -51,9 +50,9 @@ public class SelectBoxGui extends Screen {
     }
 
     @Override
-    public void render(MatrixStack stack, final int int_1, final int int_2, final float float_1) {
-        super.renderBackground(stack);
-        super.render(stack, int_1, int_2, float_1);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override

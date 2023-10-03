@@ -233,9 +233,9 @@ public class ClientMeasureBox extends MeasureBox {
      * @param boxCreatorName Name of the Box creator
      */
     private void drawLengths(final Camera camera, final MatrixStack stack, final Text boxCreatorName) {
-        final int lengthX = (int) this.box.getXLength();
-        final int lengthY = (int) this.box.getYLength();
-        final int lengthZ = (int) this.box.getZLength();
+        final int lengthX = (int) this.box.getLengthX();
+        final int lengthY = (int) this.box.getLengthY();
+        final int lengthZ = (int) this.box.getLengthZ();
 
         final Vec3d boxCenter = this.box.getCenter();
         final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ)

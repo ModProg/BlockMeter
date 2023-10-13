@@ -13,6 +13,7 @@
 
   "key.blockmeter.assign": "Toggle Block Meter",
   "key.blockmeter.menu": "Show Options",
+  "key.blockmeter.useItem": "Non right-click 'Use Item' keybind",
 
   "text.autoconfig.blockmeter.title": "Block Meter",
 
@@ -30,5 +31,7 @@
   "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "as plugin (Bukkit) or mod (Fabric) installed.",
 
   "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "Show Boxes when Block Meter is disabled",
-  "text.autoconfig.blockmeter.option.backgroundForLabels": "Colored Label Background"
+  "text.autoconfig.blockmeter.option.backgroundForLabels": "Colored Label Background",
+
+  "text.autoconfig.blockmeter.option.reach": "Reach of block selection from player"
 }

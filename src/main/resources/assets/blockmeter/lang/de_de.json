@@ -13,6 +13,7 @@
 
   "key.blockmeter.assign": "Blockmeter an/aus",
   "key.blockmeter.menu": "Optionen zeigen",
+  "key.blockmeter.useItem": "Nicht-Rechtsklick 'Item Benutzen' Taste",
 
   "text.autoconfig.blockmeter.title": "Blockmeter",
 
@@ -30,5 +31,7 @@
   "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "als Plugin (Bukkit) oder Mod (Fabric).",
 
   "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "Zeige Boxen wenn Blockmeter deaktiviert ist",
-  "text.autoconfig.blockmeter.option.backgroundForLabels": "Bunter Beschriftungshintergrund"
+  "text.autoconfig.blockmeter.option.backgroundForLabels": "Bunter Beschriftungshintergrund",
+
+  "text.autoconfig.blockmeter.option.reach": "Blockauswahlreichweite vom Spieler aus"
 }

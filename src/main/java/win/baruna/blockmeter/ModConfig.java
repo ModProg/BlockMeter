@@ -15,6 +15,9 @@ public class ModConfig implements ConfigData {
     public boolean showBoxesWhenDisabled = false;
     public boolean backgroundForLabels = true;
 
+    @ConfigEntry.BoundedDiscrete(max=200, min = 7)
+    public int reach = 50;
+
     @ConfigEntry.Gui.Excluded
     public boolean incrementColor = true;
     @ConfigEntry.Gui.Excluded

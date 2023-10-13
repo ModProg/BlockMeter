@@ -1,37 +1,20 @@
 plugins {
     id "fabric-loom" version "1.4-SNAPSHOT"
-	id "org.ajoberstar.grgit" version "3.1.1"
+    id "org.ajoberstar.grgit" version "3.1.1"
 }
 
 repositories {
-    maven {
-        url = "https://maven.fabricmc.net/"
-    }
-    maven {
-        url = "https://minecraft.guntram.de/maven/"
-    }
-    maven {
-        url = "file:///tmp/mymavenrepo/"
-    }
-    
-    maven {
-        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
-    }
-    
-    maven {
-        url = "https://jitpack.io"
-    }
-
-    maven {
-        url = "https://maven.shedaniel.me/"
-    }
-
-    maven {
-        url = "https://maven.terraformersmc.com/"
-    }
+    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://minecraft.guntram.de/maven/" }
+    maven { url = "file:///tmp/mymavenrepo/" }
+    maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url = "https://jitpack.io" }
+    maven { url = "https://maven.shedaniel.me/" }
+    maven { url = "https://maven.terraformersmc.com/" }
+    maven { url = 'https://masa.dy.fi/maven' }
 }
 
-sourceCompatibility = 1.16  
+sourceCompatibility = 1.16
 targetCompatibility = 1.16
 
 ext.Version = new Properties()
@@ -48,17 +31,17 @@ version = "${project.projectVersion}-${getBranch()}"
 archivesBaseName = "blockmeter"
 
 def getBranch() {
-	if (System.getenv().GIT_BRANCH) {
-		def branch = System.getenv().GIT_BRANCH
-		return branch.substring(branch.lastIndexOf("/") + 1)
-	}
+    if (System.getenv().GIT_BRANCH) {
+        def branch = System.getenv().GIT_BRANCH
+        return branch.substring(branch.lastIndexOf("/") + 1)
+    }
 
-	if (grgit == null) {
-		return "unknown"
-	}
+    if (grgit == null) {
+        return "unknown"
+    }
 
-	def branch = grgit.branch.current().name
-	return branch.substring(branch.lastIndexOf("/") + 1)
+    def branch = grgit.branch.current().name
+    return branch.substring(branch.lastIndexOf("/") + 1)
 }
 
 loom {
@@ -66,21 +49,21 @@ loom {
 }
 
 processResources {
-  duplicatesStrategy "warn"
-	inputs.property "version", project.projectVersion
+    duplicatesStrategy "warn"
+    inputs.property "version", project.projectVersion
 
-  from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
-		expand "version": project.projectVersion
-	}
+    from(sourceSets.main.resources.srcDirs) {
+        include "fabric.mod.json"
+        expand "version": project.projectVersion
+    }
 
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
-	}
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "fabric.mod.json"
+    }
 }
 
 dependencies {
-    modImplementation ("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
+    modImplementation("org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT") {
         // This is to fix the error:
         // com.google.*:*:* has more than one client module definitions
         // in gradle > 4
@@ -88,8 +71,8 @@ dependencies {
         exclude group: "com.google.code.gson", module: "gson"
     }
 
-    minecraft   "com.mojang:minecraft:${Versions['minecraft_version']}"
-    mappings    "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
+    minecraft "com.mojang:minecraft:${Versions['minecraft_version']}"
+    mappings "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
     modImplementation "net.fabricmc:fabric-loader:${Versions['loader_version']}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${Versions['fabric_api']}"
 
@@ -98,11 +81,12 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     include     "me.shedaniel.cloth:cloth-config-fabric:${Versions['cloth_config']}"
+//    modImplementation "fi.dy.masa.malilib:malilib-fabric-${Versions['minecraft_version']}:${Versions['malilib']}"
 
     // Testing
-    testImplementation  "org.junit.jupiter:junit-jupiter:5.+"
-    testImplementation  "org.assertj:assertj-core:3.+"
-    testImplementation  "org.mockito:mockito-inline:3.+"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.+"
+    testImplementation "org.assertj:assertj-core:3.+"
+    testImplementation "org.mockito:mockito-inline:3.+"
 }
 
 // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task

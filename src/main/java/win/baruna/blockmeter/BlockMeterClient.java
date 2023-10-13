@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -23,9 +23,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -34,10 +34,8 @@ import win.baruna.blockmeter.gui.OptionsGui;
 import win.baruna.blockmeter.gui.SelectBoxGui;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BlockMeterClient implements ClientModInitializer {
     /**
@@ -65,7 +63,12 @@ public class BlockMeterClient implements ClientModInitializer {
      * @return ConfigManager for handling the Config
      */
     public static ConfigManager<ModConfig> getConfigManager() {
+
         return confMgr;
+    }
+
+    public static ModConfig getConfig() {
+        return confMgr.getConfig();
     }
 
     /**
@@ -236,6 +239,11 @@ public class BlockMeterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
+        final KeyBinding keyBindingMeasureWithItem = new KeyBinding("key.blockmeter.useItem", -1, "category.blockmeter.key");
+        KeyBindingHelper.registerKeyBinding(keyBindingMeasureWithItem);
+
+        AtomicBoolean rightClick = new AtomicBoolean(false);
+
         // This is ugly I know, but I did not find something better
         // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
         confMgr = (ConfigManager<ModConfig>) AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
@@ -274,36 +282,64 @@ public class BlockMeterClient implements ClientModInitializer {
             if (this.active && this.boxes.size() > 0) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
-                    final HitResult rayHit = e.player.raycast(e.interactionManager.getReachDistance(), 1.0f,
-                            false);
-                    if (rayHit.getType() == HitResult.Type.BLOCK) {
-                        final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
-                        currentBox.setBlockEnd(new BlockPos(blockHitResult.getBlockPos()));
+                    assert e.player != null;
+                    this.raycastBlock(e.player).ifPresent(currentBox::setBlockEnd);
+                }
+            }
+
+            if (this.active) {
+                var key = KeyBindingHelper.getBoundKeyOf(keyBindingMeasureWithItem);
+                var pressed = false;
+                if (key.getCode() == -1) {
+                    pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), 1) == 1;
+                } else {
+                    switch (key.getCategory()) {
+                        case KEYSYM ->
+                                pressed = GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
+                        case SCANCODE -> {
+                            // TODO think of what todo
+                        }
+                        case MOUSE ->
+                                pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
                     }
+                }
+                if (pressed) {
+                    if (!rightClick.get()) {
+                        rightClick.set(true);
+                        assert e.player != null;
+                        raycastBlock(e.player).ifPresent(block -> this.onBlockMeterClick(e.player, block));
+                    }
+                } else {
+                    rightClick.set(false);
                 }
             }
         });
 
-        UseBlockCallback.EVENT
-                .register((playerEntity, world, hand, hitResult) -> this.onBlockMeterClick(playerEntity, hitResult));
+        UseItemCallback.EVENT.register((playerEntity, world, _hand) -> {
+            if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
+                return TypedActionResult.fail(playerEntity.getMainHandStack());
+            }
+            return TypedActionResult.pass(playerEntity.getMainHandStack());
+        });
         ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
+    }
+
+    private Optional<BlockPos> raycastBlock(PlayerEntity player) {
+        final HitResult rayHit = player.raycast(BlockMeterClient.getConfig().reach, 0.0f, false);
+        if (rayHit.getType() == HitResult.Type.BLOCK) {
+            final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
+            return Optional.of(blockHitResult.getBlockPos());
+        }
+        return Optional.empty();
     }
 
     /**
      * Handles the right click Event for creating and confirming new Measuring-Boxes
      *
      * @param playerEntity the player object
-     * @param hitResult
-     * @return PASS if not active or wrong item, FAIL when successful, to not send
-     * the event to the server
      */
-    private ActionResult onBlockMeterClick(final PlayerEntity playerEntity, final BlockHitResult hitResult) {
-        if (!this.active) {
-            return ActionResult.PASS;
-        }
-        if (playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
-            final BlockPos block = hitResult.getBlockPos();
-
+    private void onBlockMeterClick(final PlayerEntity playerEntity, final BlockPos block) {
+        if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
             ClientMeasureBox currentBox = getCurrentBox();
 
             if (currentBox == null) {
@@ -331,10 +367,7 @@ public class BlockMeterClient implements ClientModInitializer {
                 currentBox.setFinished();
                 sendBoxList();
             }
-
-            return ActionResult.FAIL;
         }
-        return ActionResult.PASS;
     }
 
     /**

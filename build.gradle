@@ -26,7 +26,7 @@ ext.Versions = new Properties()
 Versions.load(file("Versionfiles/${Version['minecraftVersion']}.properties").newReader())
 
 
-version = "${project.projectVersion}-${getBranch()}"
+version = "${project.projectVersion}-${Version['minecraftVersion']}"
 
 archivesBaseName = "blockmeter"
 

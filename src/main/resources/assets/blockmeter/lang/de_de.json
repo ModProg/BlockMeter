@@ -13,6 +13,7 @@
 
   "key.blockmeter.assign": "Blockmeter an/aus",
   "key.blockmeter.menu": "Optionen zeigen",
+  "key.blockmeter.measure": "Ohne Item Messen",
   "key.blockmeter.useItem": "Nicht-Rechtsklick 'Item Benutzen' Taste",
 
   "text.autoconfig.blockmeter.title": "Blockmeter",

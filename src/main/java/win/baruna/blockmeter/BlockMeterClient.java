@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.InputUtil;
@@ -37,6 +38,7 @@ import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("UnstableApiUsage")
 public class BlockMeterClient implements ClientModInitializer {
     /**
      * Currently running Instance of BlockMeterClient
@@ -50,6 +52,10 @@ public class BlockMeterClient implements ClientModInitializer {
      */
     public static BlockMeterClient getInstance() {
         return instance;
+    }
+
+    private static ClientPlayerEntity getPlayer() {
+        return Objects.requireNonNull(MinecraftClient.getInstance().player);
     }
 
     /**
@@ -116,20 +122,22 @@ public class BlockMeterClient implements ClientModInitializer {
      */
     public void disable() {
         active = false;
+        currentItem = null;
+        boxes.clear();
         if (confMgr.getConfig().deleteBoxesOnDisable) {
             clear();
         }
     }
 
     /**
-     * Resets Blockmeter to be used in an other World
+     * Resets Blockmeter to be used in another World
      */
     public void reset() {
         otherUsersBoxes = null;
         boxes.clear();
         disable();
 
-        // Resets Color to always start with white in an other world
+        // Resets Color to always start with white in another world
         ModConfig cfg = confMgr.getConfig();
         if (cfg.incrementColor) {
             cfg.colorIndex = 0;
@@ -173,11 +181,10 @@ public class BlockMeterClient implements ClientModInitializer {
         return true;
     }
 
-    public void renderOverlay(float partialTicks, MatrixStack stack) {
+    public void renderOverlay(MatrixStack stack) {
         final MinecraftClient client = MinecraftClient.getInstance();
         final Camera camera = client.gameRenderer.getCamera();
-        assert client.player != null;
-        final Identifier currentDimension = client.player.clientWorld.getRegistryKey().getValue();
+        final Identifier currentDimension = getPlayer().clientWorld.getRegistryKey().getValue();
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
@@ -188,7 +195,8 @@ public class BlockMeterClient implements ClientModInitializer {
         if (this.active || cfg.showBoxesWhenDisabled)
             if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
-                    this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(camera, stack, currentDimension, playerText)));
+                    this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(camera,
+                            stack, currentDimension, playerText)));
                     this.boxes.forEach(box -> {
                         if (!box.isFinished())
                             box.render(camera, stack, currentDimension);
@@ -197,7 +205,7 @@ public class BlockMeterClient implements ClientModInitializer {
                 if (!cfg.sendBoxes)
                     this.boxes.forEach(box -> {
                         if (box.isFinished())
-                            box.render(camera, stack, currentDimension, client.player.getDisplayName());
+                            box.render(camera, stack, currentDimension, getPlayer().getDisplayName());
                         else
                             box.render(camera, stack, currentDimension);
                     });
@@ -232,17 +240,20 @@ public class BlockMeterClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final KeyBinding keyBinding = new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M,
-                "category.blockmeter.key");
+        final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.blockmeter.assign",
+                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.blockmeter.key"));
         final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT, "category.blockmeter.key");
-        KeyBindingHelper.registerKeyBinding(keyBinding);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
-        final KeyBinding keyBindingMeasureWithItem = new KeyBinding("key.blockmeter.useItem", -1, "category.blockmeter.key");
+        final KeyBinding keyBindingMeasureWithItem = new KeyBinding("key.blockmeter.useItem", -1,
+                "category.blockmeter.key");
         KeyBindingHelper.registerKeyBinding(keyBindingMeasureWithItem);
+        final KeyBinding keyBindingMeasure = new KeyBinding("key.blockmeter.measure", InputUtil.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_4, "category.blockmeter.key");
+        KeyBindingHelper.registerKeyBinding(keyBindingMeasure);
 
-        AtomicBoolean rightClick = new AtomicBoolean(false);
+        AtomicBoolean measureWithItemDown = new AtomicBoolean(false);
 
         // This is ugly I know, but I did not find something better
         // (Issue in AutoConfig https://github.com/shedaniel/AutoConfig/issues/13)
@@ -251,39 +262,38 @@ public class BlockMeterClient implements ClientModInitializer {
             if (keyBinding.wasPressed()) {
                 if (Screen.hasShiftDown()) {
                     if (undo())
-                        e.player.sendMessage(
-                                Text.translatable("blockmeter.clearLast"),
-                                true);
+                        getPlayer().sendMessage(Text.translatable("blockmeter.clearLast"), true);
                 } else if (Screen.hasControlDown()) {
                     if (clear())
-                        e.player.sendMessage(
-                                Text.translatable("blockmeter.clearAll"),
-                                true);
+                        getPlayer().sendMessage(Text.translatable("blockmeter.clearAll"), true);
                 } else if (this.active) {
                     disable();
-                    e.player.sendMessage(Text.translatable("blockmeter.toggle.off", new Object[0]), true);
+                    getPlayer().sendMessage(Text.translatable("blockmeter.toggle.off", new Object[0]), true);
                 } else {
                     active = true;
-                    ItemStack itemStack = e.player.getMainHandStack();
+                    ItemStack itemStack = getPlayer().getMainHandStack();
                     currentItem = itemStack.getItem();
-                    e.player.sendMessage(
+                    getPlayer().sendMessage(
                             Text.translatable("blockmeter.toggle.on",
                                     Text.translatable(itemStack.getTranslationKey(), new Object[0])),
                             true);
                 }
             }
 
-            if (keyBindingMenu.wasPressed() && active
-                    && MinecraftClient.getInstance().player.getMainHandStack().getItem() == this.currentItem) {
+            if (keyBindingMenu.wasPressed() && active) {
                 MinecraftClient.getInstance().setScreen(this.quickMenu);
+            }
+
+            if (keyBindingMeasure.wasPressed()) {
+                this.active = true;
+                raycastBlock(getPlayer()).ifPresent(this::onBlockMeterClick);
             }
 
             // Updates Selection preview
             if (this.active && this.boxes.size() > 0) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
-                    assert e.player != null;
-                    this.raycastBlock(e.player).ifPresent(currentBox::setBlockEnd);
+                    this.raycastBlock(getPlayer()).ifPresent(currentBox::setBlockEnd);
                 }
             }
 
@@ -294,23 +304,21 @@ public class BlockMeterClient implements ClientModInitializer {
                     pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), 1) == 1;
                 } else {
                     switch (key.getCategory()) {
-                        case KEYSYM ->
-                                pressed = GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
-                        case SCANCODE -> {
-                            // TODO think of what todo
-                        }
-                        case MOUSE ->
-                                pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
+                        case KEYSYM, SCANCODE -> pressed = GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow()
+                                .getHandle(), key.getCode()) == 1;
+                        case MOUSE -> pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow()
+                                .getHandle(), key.getCode()) == 1;
                     }
                 }
                 if (pressed) {
-                    if (!rightClick.get()) {
-                        rightClick.set(true);
-                        assert e.player != null;
-                        raycastBlock(e.player).ifPresent(block -> this.onBlockMeterClick(e.player, block));
+                    if (!measureWithItemDown.get()) {
+                        measureWithItemDown.set(true);
+                        if (getPlayer().getMainHandStack().getItem().equals(this.currentItem)) {
+                            raycastBlock(getPlayer()).ifPresent(this::onBlockMeterClick);
+                        }
                     }
                 } else {
-                    rightClick.set(false);
+                    measureWithItemDown.set(false);
                 }
             }
         });
@@ -335,38 +343,34 @@ public class BlockMeterClient implements ClientModInitializer {
 
     /**
      * Handles the right click Event for creating and confirming new Measuring-Boxes
-     *
-     * @param playerEntity the player object
      */
-    private void onBlockMeterClick(final PlayerEntity playerEntity, final BlockPos block) {
-        if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
-            ClientMeasureBox currentBox = getCurrentBox();
+    private void onBlockMeterClick(final BlockPos block) {
+        ClientMeasureBox currentBox = getCurrentBox();
 
-            if (currentBox == null) {
-                if (Screen.hasShiftDown()) {
-                    ClientMeasureBox[] boxes = findBoxes(block);
-                    switch (boxes.length) {
-                        case 0:
-                            break;
-                        case 1:
-                            boxes[0].loosenCorner(block);
-                            break;
-                        default:
-                            this.selectBoxGui.setBoxes(boxes);
-                            this.selectBoxGui.setBlock(block);
-                            MinecraftClient.getInstance().setScreen(this.selectBoxGui);
-                            break;
-                    }
-                } else {
-                    final ClientMeasureBox box = ClientMeasureBox.getBox(block,
-                            playerEntity.getWorld().getRegistryKey().getValue());
-                    this.boxes.add(box);
+        if (currentBox == null) {
+            if (Screen.hasShiftDown()) {
+                ClientMeasureBox[] boxes = findBoxes(block);
+                switch (boxes.length) {
+                    case 0:
+                        break;
+                    case 1:
+                        boxes[0].loosenCorner(block);
+                        break;
+                    default:
+                        this.selectBoxGui.setBoxes(boxes);
+                        this.selectBoxGui.setBlock(block);
+                        MinecraftClient.getInstance().setScreen(this.selectBoxGui);
+                        break;
                 }
             } else {
-                currentBox.setBlockEnd(block);
-                currentBox.setFinished();
-                sendBoxList();
+                final ClientMeasureBox box = ClientMeasureBox.getBox(block,
+                        getPlayer().getWorld().getRegistryKey().getValue());
+                this.boxes.add(box);
             }
+        } else {
+            currentBox.setBlockEnd(block);
+            currentBox.setFinished();
+            sendBoxList();
         }
     }
 

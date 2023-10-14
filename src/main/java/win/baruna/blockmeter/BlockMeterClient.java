@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
@@ -24,6 +25,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
@@ -328,6 +330,12 @@ public class BlockMeterClient implements ClientModInitializer {
                 return TypedActionResult.fail(playerEntity.getMainHandStack());
             }
             return TypedActionResult.pass(playerEntity.getMainHandStack());
+        });
+        UseBlockCallback.EVENT.register((playerEntity, world, _hand, _block) -> {
+            if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
+                return ActionResult.FAIL;
+            }
+            return ActionResult.PASS;
         });
         ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
     }

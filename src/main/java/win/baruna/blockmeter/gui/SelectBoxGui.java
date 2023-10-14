@@ -51,7 +51,7 @@ public class SelectBoxGui extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.renderBackground(context, mouseX, mouseY, delta);
+        super.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
     }
 

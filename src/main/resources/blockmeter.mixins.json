@@ -7,8 +7,7 @@
   ],
   "client": [
     "GameRendererMixin",
-    "ClientPlayerConnectionMixin",
-    "ClientCommonNetworkHandlerMixin"
+    "ClientPlayerConnectionMixin"
   ],
   "server": [
   ],

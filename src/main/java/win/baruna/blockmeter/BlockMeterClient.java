@@ -20,7 +20,6 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
@@ -288,14 +287,14 @@ public class BlockMeterClient implements ClientModInitializer {
 
             if (keyBindingMeasure.wasPressed()) {
                 this.active = true;
-                raycastBlock(getPlayer()).ifPresent(this::onBlockMeterClick);
+                raycastBlock().ifPresent(this::onBlockMeterClick);
             }
 
             // Updates Selection preview
             if (this.active && this.boxes.size() > 0) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
-                    this.raycastBlock(getPlayer()).ifPresent(currentBox::setBlockEnd);
+                    this.raycastBlock().ifPresent(currentBox::setBlockEnd);
                 }
             }
 
@@ -316,7 +315,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     if (!measureWithItemDown.get()) {
                         measureWithItemDown.set(true);
                         if (getPlayer().getMainHandStack().getItem().equals(this.currentItem)) {
-                            raycastBlock(getPlayer()).ifPresent(this::onBlockMeterClick);
+                            raycastBlock().ifPresent(this::onBlockMeterClick);
                         }
                     }
                 } else {
@@ -340,8 +339,12 @@ public class BlockMeterClient implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
     }
 
-    private Optional<BlockPos> raycastBlock(PlayerEntity player) {
-        final HitResult rayHit = player.raycast(BlockMeterClient.getConfig().reach, 0.0f, false);
+    private Optional<BlockPos> raycastBlock() {
+        var camera = MinecraftClient.getInstance().getCameraEntity();
+        if (camera == null) {
+            return Optional.empty();
+        }
+        final HitResult rayHit = camera.raycast(BlockMeterClient.getConfig().reach, 0.0f, false);
         if (rayHit.getType() == HitResult.Type.BLOCK) {
             final BlockHitResult blockHitResult = (BlockHitResult) rayHit;
             return Optional.of(blockHitResult.getBlockPos());

@@ -138,8 +138,7 @@ class ColorButton extends ButtonWidget {
     }
 
     @Override
-    public void render(DrawContext context, final int int_1, final int int_2, final float float_1) {
-        super.render(context, int_1, int_2, float_1);
+    public void renderWidget(DrawContext context, final int int_1, final int int_2, final float float_1) {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();

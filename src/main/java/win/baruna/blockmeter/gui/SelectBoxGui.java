@@ -7,6 +7,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 public class SelectBoxGui extends Screen {
@@ -18,9 +19,9 @@ public class SelectBoxGui extends Screen {
         super(NarratorManager.EMPTY);
     }
 
-    private final static int BUTTONWIDTH = 250;
-    private final static int PADDING = 2;
-    private final static int BUTTONHEIGHT = 20;
+    final static int BUTTONWIDTH = 250;
+    final static int PADDING = 2;
+    final static int BUTTONHEIGHT = 20;
 
     @Override
     protected void init() {
@@ -37,14 +38,17 @@ public class SelectBoxGui extends Screen {
             this.addDrawableChild(new ColorButton(this.width / 2 - (BUTTONWIDTH) / 2,
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
                     box.getColor().getColorComponents(), false, true, button -> {
-                        box.loosenCorner(block);
-                        MinecraftClient.getInstance().setScreen(null);
-                    }));
+                BlockMeterClient.getInstance().editBox(box, block);
+                MinecraftClient.getInstance().setScreen(null);
+            }));
 
         }
 
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"), button -> MinecraftClient.getInstance().setScreen(null))
-                .position(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING)
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"),
+                button -> MinecraftClient.getInstance()
+                .setScreen(null))
+                .position(this.width / 2 - BUTTONWIDTH / 2,
+                        this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING)
                 .size(BUTTONWIDTH, BUTTONHEIGHT)
                 .build());
     }

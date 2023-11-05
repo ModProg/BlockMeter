@@ -6,6 +6,10 @@
   "blockmeter.clearLast": "Letzte Box gelöscht",
   "blockmeter.clearAll": "Alle Boxen gelöscht",
   "blockmeter.showOthers": "Boxen anderer Spieler anzeigen: %s",
+  "blockmeter.moveCorner": "Boxecke bewegen",
+  "blockmeter.restrictMining": "Abbauen beschränken: %s",
+  "blockmeter.restrictMining.inside": "auf INNEN",
+  "blockmeter.restrictMining.outside": "auf AUẞERHALB",
 
   "blockmeter.boxToString": "Start: (%d, %d, %d), Ende: (%d, %d, %d)",
 

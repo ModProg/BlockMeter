@@ -11,10 +11,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
@@ -26,14 +24,19 @@ import java.util.List;
 public class ClientMeasureBox extends MeasureBox {
     private Box box;
 
+    @NotNull
+    public MiningRestriction miningRestriction;
+
     protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension,
                                final DyeColor color, final boolean finished, final int mode, final int orientation) {
         super(blockStart, blockEnd, dimension, color, finished, mode, orientation);
+        miningRestriction = MiningRestriction.Off;
         updateBoundingBox();
     }
 
     protected ClientMeasureBox(PacketByteBuf attachedData) {
         super(attachedData);
+        miningRestriction = MiningRestriction.Off;
         updateBoundingBox();
     }
 
@@ -403,6 +406,10 @@ public class ClientMeasureBox extends MeasureBox {
         return new ClientMeasureBox(attachedData);
     }
 
+    public boolean contains(BlockPos block) {
+        return BlockBox.create(blockStart, blockEnd).contains(block);
+    }
+
     private static class Line implements Comparable<Line> {
         Box line;
         double distance;
@@ -415,6 +422,33 @@ public class ClientMeasureBox extends MeasureBox {
         @Override
         public int compareTo(final Line l) {
             return Double.compare(this.distance, l.distance);
+        }
+    }
+
+    public enum MiningRestriction {
+        Off("options.off"),
+        Inside("blockmeter.restrictMining.inside"),
+        Outside("blockmeter.restrictMining.outside");
+        public final String translation;
+
+        MiningRestriction(String translation) {
+            this.translation = translation;
+        }
+
+        @NotNull
+        public MiningRestriction next() {
+            switch (this) {
+                case Off -> {
+                    return Inside;
+                }
+                case Inside -> {
+                    return Outside;
+                }
+                case Outside -> {
+                    return Off;
+                }
+                default -> throw new IllegalArgumentException();
+            }
         }
     }
 }

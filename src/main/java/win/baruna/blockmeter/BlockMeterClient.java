@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -32,6 +33,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
+import win.baruna.blockmeter.gui.EditBoxGui;
 import win.baruna.blockmeter.gui.OptionsGui;
 import win.baruna.blockmeter.gui.SelectBoxGui;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
@@ -108,12 +110,14 @@ public class BlockMeterClient implements ClientModInitializer {
      * The QuickMenu for selecting on of multiple Boxes.
      */
     private final SelectBoxGui selectBoxGui;
+    private final EditBoxGui editBoxGui;
 
     public BlockMeterClient() {
         active = false;
         boxes = new ArrayList<>();
         quickMenu = new OptionsGui();
         selectBoxGui = new SelectBoxGui();
+        editBoxGui = new EditBoxGui();
         otherUsersBoxes = null;
         BlockMeterClient.instance = this;
     }
@@ -336,6 +340,19 @@ public class BlockMeterClient implements ClientModInitializer {
             }
             return ActionResult.PASS;
         });
+        AttackBlockCallback.EVENT.register(((player, world, hand, pos, direction) -> {
+            var inside = this.boxes.stream()
+                    .filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Inside)
+                    .anyMatch(box -> !box.contains(pos));
+            var outside = this.boxes.stream()
+                    .filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Outside)
+                    .anyMatch(box -> box.contains(pos));
+            if (inside || outside) {
+                return ActionResult.FAIL;
+            } else {
+                return ActionResult.PASS;
+            }
+        }));
         ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
     }
 
@@ -352,6 +369,12 @@ public class BlockMeterClient implements ClientModInitializer {
         return Optional.empty();
     }
 
+    public void editBox(ClientMeasureBox box, BlockPos block) {
+        this.editBoxGui.setBox(box);
+        this.editBoxGui.setBlock(block);
+        MinecraftClient.getInstance().setScreen(this.editBoxGui);
+    }
+
     /**
      * Handles the right click Event for creating and confirming new Measuring-Boxes
      */
@@ -365,7 +388,7 @@ public class BlockMeterClient implements ClientModInitializer {
                     case 0:
                         break;
                     case 1:
-                        boxes[0].loosenCorner(block);
+                        editBox(boxes[0], block);
                         break;
                     default:
                         this.selectBoxGui.setBoxes(boxes);

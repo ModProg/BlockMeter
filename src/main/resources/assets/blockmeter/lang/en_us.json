@@ -6,6 +6,10 @@
   "blockmeter.clearLast": "Last box cleared",
   "blockmeter.clearAll": "All boxes cleared",
   "blockmeter.showOthers": "Show other user's boxses: %s",
+  "blockmeter.moveCorner": "Move box corner",
+  "blockmeter.restrictMining": "Restrict mining: %s",
+  "blockmeter.restrictMining.inside": "to INSIDE",
+  "blockmeter.restrictMining.outside": "to OUTSIDE",
 
   "blockmeter.boxToString": "Start: (%d, %d, %d), End: (%d, %d, %d)",
 

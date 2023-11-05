@@ -347,7 +347,7 @@ public class BlockMeterClient implements ClientModInitializer {
             var outside = this.boxes.stream()
                     .filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Outside)
                     .anyMatch(box -> box.contains(pos));
-            if (inside || outside) {
+            if (!Screen.hasShiftDown() && (inside || outside)) {
                 return ActionResult.FAIL;
             } else {
                 return ActionResult.PASS;

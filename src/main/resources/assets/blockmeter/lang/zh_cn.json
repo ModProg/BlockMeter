@@ -1,34 +1,35 @@
 {
-    "blockmeter.keepColor": "总是使用当前的颜色: %s",
+    "blockmeter.keepColor": "总是使用当前颜色: %s",
     "blockmeter.diagonal": "对角线: %s",
-    "blockmeter.toggle.on": "%s现在被用作你的方块计量表！",
-    "blockmeter.toggle.off": "方块计量表已经关闭！",
-    "blockmeter.clearLast": "已清除上一个方块计量框",
-    "blockmeter.clearAll": "已清除所有方块计量框",
-    "blockmeter.showOthers": "显示其他玩家的方块计量框: %s",
+    "blockmeter.toggle.on": "%s现在为测量工具的触发物品！",
+    "blockmeter.toggle.off": "测量工具已经关闭！",
+    "blockmeter.clearLast": "已清除上一个测距辅助框",
+    "blockmeter.clearAll": "已清除所有测距辅助框",
+    "blockmeter.showOthers": "显示其他玩家的测距辅助框: %s",
 
     "blockmeter.boxToString": "起点: (%d, %d, %d), 终点: (%d, %d, %d)",
 
-    "category.blockmeter.key": "方块计量表",
+    "category.blockmeter.key": "测量工具",
 
-    "key.blockmeter.assign": "切换方块计量表",
+    "key.blockmeter.assign": "切换测量工具",
     "key.blockmeter.menu": "显示选项",
 
-    "text.autoconfig.blockmeter.title": "方块计量表",
+    "text.autoconfig.blockmeter.title": "测距辅助框",
 
-    "text.autoconfig.blockmeter.option.minimalLabelSize": "最小的方块计量框的标记大小",
-    "text.autoconfig.blockmeter.option.minimalLabelSize.@Tooltip[0]": "十个方块后，标记会保持它们",
-    "text.autoconfig.blockmeter.option.minimalLabelSize.@Tooltip[1]": "的大小以提高远距离可读性",
+    "text.autoconfig.blockmeter.option.minimalLabelSize": "测距辅助框标签最小尺寸",
+    "text.autoconfig.blockmeter.option.minimalLabelSize.@Tooltip[0]": "距离辅助框超过 10 格后",
+    "text.autoconfig.blockmeter.option.minimalLabelSize.@Tooltip[1]": "标签会适当放大以增强可读性",
 
-    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "在禁用时移除方块计量框",
-    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable.@Tooltip[0]": "在点击绑定的键位后",
-    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable.@Tooltip[1]": "移除方块计量框",
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable": "禁用后清除辅助框",
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable.@Tooltip[0]": "可在按下热键后",
+    "text.autoconfig.blockmeter.option.deleteBoxesOnDisable.@Tooltip[1]": "移除测距辅助框",
     
-    "text.autoconfig.blockmeter.option.sendBoxes": "向有能力的服务器上的其他玩家发送方块计量框",
-    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[0]": "可以通过游戏中的选项隐藏方块计量框", 
-    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[1]": "这些服务器必须安装方块计量表的",
-    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "插件（Bukkit）或mod（Fabric）。",
+    "text.autoconfig.blockmeter.option.sendBoxes": "与其他玩家同步显示测距辅助框",
+    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[0]": "可通过游戏中的选项隐藏测距辅助框", 
+    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[1]": "所在服务器必须安装测量工具",
+    "text.autoconfig.blockmeter.option.sendBoxes.@Tooltip[2]": "插件（Bukkit）或模组（Fabric）。",
     
-    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "在方块计量表被禁用时显示方块计量框",
-    "text.autoconfig.blockmeter.option.backgroundForLabels": "彩色的标记背景"
+    "text.autoconfig.blockmeter.option.showBoxesWhenDisabled": "禁用测量工具时保持辅助框显示",
+    "text.autoconfig.blockmeter.option.backgroundForLabels": "彩色标签背景",
+    "text.autoconfig.blockmeter.option.reach": "从玩家视角选择辅助框范围"
 }

@@ -1,26 +1,21 @@
 package win.baruna.blockmeter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import win.baruna.blockmeter.measurebox.MeasureBox;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 public class BlockMeterServer implements ModInitializer {
 
-    private Map<UUID, List<MeasureBox>> playerBoxes;
+    private final Map<UUID, List<MeasureBox>> playerBoxes = new HashMap<>();
     private MinecraftServer server;
     private static BlockMeterServer instance;
 
@@ -28,14 +23,15 @@ public class BlockMeterServer implements ModInitializer {
     public void onInitialize() {
 
         instance = this;
-        playerBoxes = new HashMap<>();
-        ServerPlayNetworking.registerGlobalReceiver(BlockMeter.C2SPacketIdentifier, this::processClientPacket);
+        PayloadTypeRegistry.playS2C().register(BoxPayload.ID, BoxPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(BoxPayload.ID, BoxPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(BoxPayload.ID, this::processClientPacket);
         ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
     }
 
     /**
      * Removes a player from the BoxMap
-     * 
+     *
      * @param player Player to be removed
      */
     public static void removePlayer(ServerPlayerEntity player) {
@@ -49,8 +45,6 @@ public class BlockMeterServer implements ModInitializer {
 
     /**
      * Handles ServerStart
-     * 
-     * @param server
      */
     private void onStartServer(MinecraftServer server) {
         this.server = server;
@@ -58,26 +52,17 @@ public class BlockMeterServer implements ModInitializer {
 
     /**
      * Processes a ClientPacket
-     * 
-     * @param packetContext
-     * @param attachedData
      */
 
-    private void processClientPacket(MinecraftServer server, ServerPlayerEntity player,
-            ServerPlayNetworkHandler handler, PacketByteBuf attachedData, PacketSender responseSender) {
-        int size = attachedData.readInt();
-
+    private void processClientPacket(BoxPayload payload, ServerPlayNetworking.Context context) {
         try {
-            List<MeasureBox> clientBoxes = new ArrayList<>(size);
-            for (int i = 0; i < size; i++) {
-                clientBoxes.add(MeasureBox.fromPacketByteBuf(attachedData));
-            }
+            var boxes = payload.receivedBoxes().values().stream().findFirst().orElse(List.of());
             synchronized (playerBoxes) {
-                playerBoxes.put(player.getUuid(), clientBoxes);
+                playerBoxes.put(context.player().getUuid(), boxes);
             }
         } catch (IllegalArgumentException ex) {
             synchronized (playerBoxes) {
-                playerBoxes.remove(player.getUuid());
+                playerBoxes.remove(context.player().getUuid());
             }
         }
 
@@ -88,31 +73,27 @@ public class BlockMeterServer implements ModInitializer {
      * Informs all Players about the current boxList
      */
     private void informAllPlayers() {
-        PacketByteBuf data = buildS2CPacket();
-        for (ServerPlayerEntity player: server.getPlayerManager().getPlayerList()) {
-            ServerPlayNetworking.send(player, BlockMeter.S2CPacketIdentifier, data);
+        BoxPayload data = buildS2CPacket();
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            ServerPlayNetworking.send(player, data);
         }
     }
 
     /**
      * Builds a S2CPacket containing the BoxList
-     * 
+     *
      * @return S2CPacket containing the BoxList
      */
-    private PacketByteBuf buildS2CPacket() {
-        PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
+    private BoxPayload buildS2CPacket() {
+        var data = new HashMap<String, List<MeasureBox>>();
         synchronized (playerBoxes) {
-            data.writeInt(playerBoxes.size());
-            Set<Map.Entry<UUID, List<MeasureBox>>> knownPlayers = playerBoxes.entrySet();
-            for (Map.Entry<UUID, List<MeasureBox>> playerBoxEntry: knownPlayers) {
+            for (var playerBoxEntry : playerBoxes.entrySet()) {
                 ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerBoxEntry.getKey());
-                data.writeText(player.getDisplayName());
-                data.writeInt(playerBoxEntry.getValue().size());
-                for (int i = 0; i < playerBoxEntry.getValue().size(); i++) {
-                    playerBoxEntry.getValue().get(i).writePacketBuf(data);
+                if (player != null) {
+                    data.put(player.getNameForScoreboard(), playerBoxEntry.getValue());
                 }
             }
         }
-        return data;
+        return new BoxPayload(data);
     }
 }

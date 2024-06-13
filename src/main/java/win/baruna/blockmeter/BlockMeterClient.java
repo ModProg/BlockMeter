@@ -1,6 +1,6 @@
 package win.baruna.blockmeter;
 
-import io.netty.buffer.Unpooled;
+import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigManager;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
@@ -23,7 +24,6 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
@@ -40,6 +40,7 @@ import win.baruna.blockmeter.measurebox.ClientMeasureBox;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class BlockMeterClient implements ClientModInitializer {
@@ -93,13 +94,13 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * The List of Measuring-Boxes currently created by the current User
      */
-    private final List<ClientMeasureBox> boxes;
+    private final List<ClientMeasureBox> boxes = new ArrayList<>();
 
     /**
      * A Map of Lists of Boxes currently created by other Users, with Text being the
      * Username
      */
-    private Map<Text, List<ClientMeasureBox>> otherUsersBoxes;
+    private Map<String, List<ClientMeasureBox>> otherUsersBoxes;
 
     /**
      * The QuickMenu for changing of Color etc.
@@ -114,7 +115,6 @@ public class BlockMeterClient implements ClientModInitializer {
 
     public BlockMeterClient() {
         active = false;
-        boxes = new ArrayList<>();
         quickMenu = new OptionsGui();
         selectBoxGui = new SelectBoxGui();
         editBoxGui = new EditBoxGui();
@@ -199,9 +199,9 @@ public class BlockMeterClient implements ClientModInitializer {
 
         if (this.active || cfg.showBoxesWhenDisabled)
             if (cfg.showOtherUsersBoxes) {
-                if (otherUsersBoxes != null && otherUsersBoxes.size() > 0) {
+                if (otherUsersBoxes != null && !otherUsersBoxes.isEmpty()) {
                     this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(camera,
-                            stack, currentDimension, playerText)));
+                            stack, currentDimension, Text.literal(playerText))));
                     this.boxes.forEach(box -> {
                         if (!box.isFinished())
                             box.render(camera, stack, currentDimension);
@@ -222,15 +222,15 @@ public class BlockMeterClient implements ClientModInitializer {
     /**
      * Gets Triggered when the Player disconnects from the Server
      */
-    public void onDisconnected() {
+    public void onDisconnected(ClientPlayNetworkHandler clientPlayNetworkHandler, MinecraftClient minecraftClient) {
         reset();
     }
 
     /**
      * Gets Triggered when the Player connects to the Server
      */
-    public void onConnected() {
-        ClientPlayNetworking.registerReceiver(BlockMeter.S2CPacketIdentifier, this::handleServerBoxList);
+    private void onConnected(ClientPlayNetworkHandler clientPlayNetworkHandler, PacketSender packetSender,
+                             MinecraftClient minecraftClient) {
         sendBoxList(); // to make the server send other user's boxes
     }
 
@@ -257,6 +257,12 @@ public class BlockMeterClient implements ClientModInitializer {
         final KeyBinding keyBindingMeasure = new KeyBinding("key.blockmeter.measure", InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_4, "category.blockmeter.key");
         KeyBindingHelper.registerKeyBinding(keyBindingMeasure);
+
+        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> renderOverlay(context.matrixStack()));
+
+        ClientPlayConnectionEvents.DISCONNECT.register(this::onDisconnected);
+        ClientPlayConnectionEvents.JOIN.register(this::onConnected);
+        ClientPlayNetworking.registerGlobalReceiver(BoxPayload.ID, this::handleServerBoxList);
 
         AtomicBoolean measureWithItemDown = new AtomicBoolean(false);
 
@@ -295,7 +301,7 @@ public class BlockMeterClient implements ClientModInitializer {
             }
 
             // Updates Selection preview
-            if (this.active && this.boxes.size() > 0) {
+            if (this.active && !this.boxes.isEmpty()) {
                 final ClientMeasureBox currentBox = getCurrentBox();
                 if (currentBox != null) {
                     this.raycastBlock().ifPresent(currentBox::setBlockEnd);
@@ -353,7 +359,6 @@ public class BlockMeterClient implements ClientModInitializer {
                 return ActionResult.PASS;
             }
         }));
-        ClientPlayConnectionEvents.DISCONNECT.register((_a, _b) -> this.onDisconnected());
     }
 
     private Optional<BlockPos> raycastBlock() {
@@ -424,31 +429,17 @@ public class BlockMeterClient implements ClientModInitializer {
     private void sendBoxList() {
         if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
             return;
-        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-        passedData.writeInt(boxes.size());
-        for (ClientMeasureBox box : boxes) {
-            box.writePacketBuf(passedData);
-        }
-        ClientPlayNetworking.send(BlockMeter.C2SPacketIdentifier, passedData);
+        ClientPlayNetworking.send(new BoxPayload(Map.of("", new ArrayList<>(boxes))));
     }
 
     /**
      * handles the BoxList of other Players
      */
-    private void handleServerBoxList(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf data,
-                                     PacketSender responseSender) {
-        Map<Text, List<ClientMeasureBox>> receivedBoxes = new HashMap<>();
-        int playerCount = data.readInt();
-        for (int i = 0; i < playerCount; i++) {
-            Text playerName = data.readText();
-            int boxCount = data.readInt();
-            List<ClientMeasureBox> boxes = new ArrayList<>(boxCount);
-            for (int j = 0; j < boxCount; j++) {
-                boxes.add(ClientMeasureBox.fromPacketByteBuf(data));
-            }
-            receivedBoxes.put(playerName, boxes);
-        }
-        client.executeTask(() -> otherUsersBoxes = receivedBoxes);
+    private void handleServerBoxList(BoxPayload payload, ClientPlayNetworking.Context context) {
+        context.client().executeTask(() -> otherUsersBoxes = payload.receivedBoxes().entrySet().stream()
+                .map(entry -> Pair.of(entry.getKey(), entry.getValue().stream().map(ClientMeasureBox::new)
+                        .toList()))
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
     }
 
 }

@@ -40,6 +40,12 @@ public class ClientMeasureBox extends MeasureBox {
         updateBoundingBox();
     }
 
+    public ClientMeasureBox(MeasureBox measureBox) {
+        super(measureBox.blockStart, measureBox.blockEnd, measureBox.dimension, measureBox.color, measureBox.finished, measureBox.mode, measureBox.orientation);
+        miningRestriction = MiningRestriction.Off;
+        updateBoundingBox();
+    }
+
     public static ClientMeasureBox getBox(final BlockPos block, final Identifier dimension) {
         final ClientMeasureBox box = new ClientMeasureBox(block, block, dimension, getSelectedColor(), false, 0, 0);
         incrementColor();

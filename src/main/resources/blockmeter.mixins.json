@@ -6,9 +6,6 @@
     "ServerPlayerConnectionMixin"
   ],
   "client": [
-    "GameRendererMixin",
-    "ClientPlayerConnectionMixin",
-    "ClientCommonNetworkHandlerMixin"
   ],
   "server": [
   ],

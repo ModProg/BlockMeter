@@ -1,5 +1,6 @@
 package win.baruna.blockmeter.gui;
 
+import me.shedaniel.math.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -37,7 +38,7 @@ public class SelectBoxGui extends Screen {
 
             this.addDrawableChild(new ColorButton(this.width / 2 - (BUTTONWIDTH) / 2,
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
-                    box.getColor().getColorComponents(), false, true, button -> {
+                    Color.ofOpaque(box.getColor().getMapColor().color), false, true, button -> {
                 BlockMeterClient.getInstance().editBox(box, block);
                 MinecraftClient.getInstance().setScreen(null);
             }));
@@ -45,8 +46,7 @@ public class SelectBoxGui extends Screen {
         }
 
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"),
-                button -> MinecraftClient.getInstance()
-                .setScreen(null))
+                button -> MinecraftClient.getInstance().setScreen(null))
                 .position(this.width / 2 - BUTTONWIDTH / 2,
                         this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING)
                 .size(BUTTONWIDTH, BUTTONHEIGHT)

@@ -7,11 +7,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat.DrawMode;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -38,7 +34,8 @@ public class OptionsGui extends Screen {
                 final int colorIndex = i * 4 + j;
                 this.addDrawableChild(new ColorButton(this.width / 2 - 44 + j * 22,
                         this.height / 2 - 88 + i * 22, 20, 20, null,
-                        DyeColor.byId(colorIndex).getColorComponents(), config.colorIndex == colorIndex, false,
+                        Color.ofOpaque(DyeColor.byId(colorIndex)
+                                .getMapColor().color), config.colorIndex == colorIndex, false,
                         button -> {
                             ClientMeasureBox.setColorIndex(colorIndex);
 
@@ -51,7 +48,8 @@ public class OptionsGui extends Screen {
         }
 
         this.addDrawableChild(new ButtonWidget.Builder(
-                Text.translatable("blockmeter.keepColor", Text.translatable(config.incrementColor ? "options.off" : "options.on")), button -> {
+                Text.translatable("blockmeter.keepColor", Text.translatable(config.incrementColor ? "options.off" :
+                        "options.on")), button -> {
             config.incrementColor = !config.incrementColor;
             MinecraftClient.getInstance().setScreen(null);
             // Todo find a way to increment to a new Color if a box was created while
@@ -62,7 +60,8 @@ public class OptionsGui extends Screen {
                 .size(BUTTONWIDTH, 20)
                 .build());
 
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.diagonal", Text.translatable(config.innerDiagonal ? "options.on" : "options.off")), button -> {
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.diagonal",
+                Text.translatable(config.innerDiagonal ? "options.on" : "options.off")), button -> {
             System.err.println("IDK WHAT YOU ARE DOING");
             config.innerDiagonal = !config.innerDiagonal;
             MinecraftClient.getInstance().setScreen(null);
@@ -72,7 +71,8 @@ public class OptionsGui extends Screen {
                 .size(BUTTONWIDTH, 20)
                 .build());
 
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.showOthers", Text.translatable(config.showOtherUsersBoxes ? "options.on" : "options.off")), button -> {
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("blockmeter.showOthers",
+                Text.translatable(config.showOtherUsersBoxes ? "options.on" : "options.off")), button -> {
             System.err.println("IDK WHAT YOU ARE DOING");
             config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
             MinecraftClient.getInstance().setScreen(null);
@@ -106,12 +106,6 @@ class ColorButton extends ButtonWidget {
     boolean texture;
     MutableText text;
 
-    ColorButton(final int x, final int y, final int width, final int height, final MutableText label,
-                final float[] color,
-                final boolean selected, boolean texture, PressAction onPress) {
-        this(x, y, width, height, label, Color.ofRGB(color[0], color[1], color[2]), selected, texture, onPress);
-    }
-
     @Override
     public void onPress() {
         System.out.println(color.getRed());
@@ -141,28 +135,22 @@ class ColorButton extends ButtonWidget {
     public void renderWidget(DrawContext context, final int int_1, final int int_2, final float float_1) {
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        var bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         int r = this.color.getRed();
         int g = this.color.getGreen();
         int b = this.color.getBlue();
         int a = texture ? 102 : 255;
-        bufferBuilder.begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0)
-                .color(r, g, b, a)
-                .next();
-        bufferBuilder.vertex((double) this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
-                .color(r, g, b, a)
-                .next();
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0.0)
-                .color(r, g, b, a)
-                .next();
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), (double) this.y - (texture ? 1 : 0), 0.0)
-                .color(r, g, b, a)
-                .next();
-        tessellator.draw();
-
+        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
+                .color(r, g, b, a);
+        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
+                .color(r, g, b, a);
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
+                .color(r, g, b, a);
+        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
+                .color(r, g, b, a);
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 
         if (text != null) {
             boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;
@@ -170,10 +158,12 @@ class ColorButton extends ButtonWidget {
             final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             int text_width = textRenderer.getWidth(text);
             if (dark || texture)
-                context.drawText(textRenderer, text.asOrderedText(), x + width / 2 - text_width / 2, y + height / 2 - 4, 0xFFFFFF, true);
+                context.drawText(textRenderer, text.asOrderedText(), x + width / 2 - text_width / 2,
+                        y + height / 2 - 4, 0xFFFFFF, true);
             else {
                 // shadow
-                context.drawText(textRenderer, text, x + width / 2 - text_width / 2 + 1, y + height / 2 - 3, 0xAAAAAA, false);
+                context.drawText(textRenderer, text, x + width / 2 - text_width / 2 + 1, y + height / 2 - 3, 0xAAAAAA
+                        , false);
                 context.drawText(textRenderer, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0, false);
             }
         }

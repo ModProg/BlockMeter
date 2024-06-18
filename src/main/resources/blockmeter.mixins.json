@@ -3,7 +3,6 @@
   "package": "win.baruna.blockmeter.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ServerPlayerConnectionMixin"
   ],
   "client": [
   ],

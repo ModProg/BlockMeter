@@ -3,6 +3,7 @@ package win.baruna.blockmeter;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 import win.baruna.blockmeter.measurebox.MeasureBox;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public record BoxPayload(Map<String, List<MeasureBox>> receivedBoxes) implements
         }
     }
 
-    public static final Id<BoxPayload> ID = CustomPayload.id(BlockMeter.MOD_ID + ":boxes");
+    public static final Id<BoxPayload> ID = new Id<>(Identifier.of(BlockMeter.MOD_ID, "boxes"));
 
     public BoxPayload(PacketByteBuf data) {
         this(new HashMap<>());

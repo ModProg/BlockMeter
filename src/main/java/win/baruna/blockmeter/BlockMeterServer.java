@@ -3,6 +3,7 @@ package win.baruna.blockmeter;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,6 +28,9 @@ public class BlockMeterServer implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(BoxPayload.ID, BoxPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(BoxPayload.ID, this::processClientPacket);
         ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
+        ServerPlayConnectionEvents.DISCONNECT.register((b, a) -> {
+            System.out.printf("DISCONNECTD %s%n", b.player.getUuid());
+        });
     }
 
     /**

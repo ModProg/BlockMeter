@@ -1,6 +1,5 @@
 plugins {
     id "fabric-loom" version "1.7-SNAPSHOT"
-    id "org.ajoberstar.grgit" version "3.1.1"
 }
 
 repositories {
@@ -29,20 +28,6 @@ Versions.load(file("Versionfiles/${Version['minecraftVersion']}.properties").new
 version = "${project.projectVersion}-${Version['minecraftVersion']}"
 
 archivesBaseName = "blockmeter"
-
-def getBranch() {
-    if (System.getenv().GIT_BRANCH) {
-        def branch = System.getenv().GIT_BRANCH
-        return branch.substring(branch.lastIndexOf("/") + 1)
-    }
-
-    if (grgit == null) {
-        return "unknown"
-    }
-
-    def branch = grgit.branch.current().name
-    return branch.substring(branch.lastIndexOf("/") + 1)
-}
 
 loom {
     mixin.defaultRefmapName = "blockmeter-refmap.json";

@@ -49,7 +49,7 @@ public class MeasureBox {
 
     /**
      * Creates a MeasureBox from a PacketByteBuf
-     * 
+     *
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
@@ -62,16 +62,14 @@ public class MeasureBox {
         this.mode = attachedData.readInt();
         this.orientation = attachedData.readInt();
 
-        if (blockStart.getY() < 0 || blockStart.getY() > 256
-                || blockEnd.getY() < 0 || blockEnd.getY() > 256
-                || dimension == null) {
+        if (dimension == null) {
             throw new IllegalArgumentException("invalid buffer");
         }
     }
 
     /**
      * Fills a PacketByteBuf with the MeasureBox
-     * 
+     *
      * @param buf PacketByteBuf to fill
      */
     public void writePacketBuf(PacketByteBuf buf) {
@@ -86,7 +84,7 @@ public class MeasureBox {
 
     /**
      * Parses a MeasureBox from a PacketByteBuf
-     * 
+     *
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */

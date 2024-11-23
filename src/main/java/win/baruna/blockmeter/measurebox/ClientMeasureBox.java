@@ -5,6 +5,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.util.BufferAllocator;
@@ -135,7 +136,7 @@ public class ClientMeasureBox extends MeasureBox {
 
         final Tessellator tess = Tessellator.getInstance();
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
         BufferBuilder buffer = tess.begin(DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);

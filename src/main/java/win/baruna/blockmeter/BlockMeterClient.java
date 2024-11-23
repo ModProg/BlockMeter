@@ -27,7 +27,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -153,7 +152,7 @@ public class BlockMeterClient implements ClientModInitializer {
      * Clears Boxes and sends this information to the server
      */
     public boolean clear() {
-        boolean hasBox = boxes.size() > 0;
+        boolean hasBox = !boxes.isEmpty();
         boxes.clear();
         sendBoxList();
 
@@ -170,7 +169,7 @@ public class BlockMeterClient implements ClientModInitializer {
      * Removes the last box
      */
     public boolean undo() {
-        if (this.boxes.size() == 0)
+        if (this.boxes.isEmpty())
             return false;
 
         this.boxes.remove(this.boxes.size() - 1);
@@ -186,7 +185,6 @@ public class BlockMeterClient implements ClientModInitializer {
     }
 
     public void renderOverlay(WorldRenderContext context) {
-        final MinecraftClient client = MinecraftClient.getInstance();
         final Identifier currentDimension = getPlayer().clientWorld.getRegistryKey().getValue();
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
@@ -277,14 +275,13 @@ public class BlockMeterClient implements ClientModInitializer {
                         getPlayer().sendMessage(Text.translatable("blockmeter.clearAll"), true);
                 } else if (this.active) {
                     disable();
-                    getPlayer().sendMessage(Text.translatable("blockmeter.toggle.off", new Object[0]), true);
+                    getPlayer().sendMessage(Text.translatable("blockmeter.toggle.off"), true);
                 } else {
                     active = true;
                     ItemStack itemStack = getPlayer().getMainHandStack();
                     currentItem = itemStack.getItem();
                     getPlayer().sendMessage(
-                            Text.translatable("blockmeter.toggle.on",
-                                    Text.translatable(itemStack.getTranslationKey(), new Object[0])),
+                            Text.translatable("blockmeter.toggle.on", itemStack.getItemName()),
                             true);
                 }
             }
@@ -334,9 +331,9 @@ public class BlockMeterClient implements ClientModInitializer {
 
         UseItemCallback.EVENT.register((playerEntity, world, _hand) -> {
             if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {
-                return TypedActionResult.fail(playerEntity.getMainHandStack());
+                return ActionResult.FAIL;
             }
-            return TypedActionResult.pass(playerEntity.getMainHandStack());
+            return ActionResult.PASS;
         });
         UseBlockCallback.EVENT.register((playerEntity, world, _hand, _block) -> {
             if (this.active && playerEntity.getMainHandStack().getItem().equals(this.currentItem)) {

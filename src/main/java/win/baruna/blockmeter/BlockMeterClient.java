@@ -1,6 +1,5 @@
 package win.baruna.blockmeter;
 
-import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigManager;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
@@ -30,6 +29,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.glfw.GLFW;
 import win.baruna.blockmeter.gui.EditBoxGui;
 import win.baruna.blockmeter.gui.OptionsGui;

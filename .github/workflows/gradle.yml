@@ -16,6 +16,11 @@ jobs:
         java: [ 21 ]
         gradle: [ wrapper, current]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
+        include:
+          - java: 21
+            gradle: wrapper
+            os: ubuntu-latest
+            upload: true
     runs-on: ${{ matrix.os }}
     name: Java ${{ matrix.java }}, Gradle ${{ matrix.gradle }} on ${{ matrix.os}}
 
@@ -45,10 +50,12 @@ jobs:
         arguments: build
         cache-disabled: true
     - name: Upload Artefact
+      if: ${{ matrix.upload }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.sha }}
-        path: build/libs/*.jar
+        path: |
+          build/libs/*.jar
+          !build/libs/*sources.jar
   built:
     runs-on: ubuntu-latest
     needs: [build]

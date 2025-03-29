@@ -89,7 +89,7 @@ public class ClientMeasureBoxTest {
     })
     void testSetColorIndex(DyeColor color) {
         try (MockedStatic<BlockMeterClient> client = getBMC()) {
-            ClientMeasureBox.setColorIndex(color.getId());
+            ClientMeasureBox.setColorIndex(color.getIndex());
             final ClientMeasureBox box = ClientMeasureBox
                     .getBox(new BlockPos(0, 0, 0), OVERWORLD_ID);
 

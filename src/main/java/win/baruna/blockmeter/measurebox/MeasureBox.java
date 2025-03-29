@@ -57,7 +57,7 @@ public class MeasureBox {
         this.blockStart = attachedData.readBlockPos();
         this.blockEnd = attachedData.readBlockPos();
         this.dimension = attachedData.readIdentifier();
-        this.color = DyeColor.byId(attachedData.readInt());
+        this.color = DyeColor.byIndex(attachedData.readInt());
         this.finished = attachedData.readBoolean();
         this.mode = attachedData.readInt();
         this.orientation = attachedData.readInt();
@@ -76,7 +76,7 @@ public class MeasureBox {
         buf.writeBlockPos(this.blockStart);
         buf.writeBlockPos(this.blockEnd);
         buf.writeIdentifier(dimension);
-        buf.writeInt(color.getId());
+        buf.writeInt(color.getIndex());
         buf.writeBoolean(finished);
         buf.writeInt(mode);
         buf.writeInt(orientation);

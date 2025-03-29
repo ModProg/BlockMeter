@@ -4,9 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import me.shedaniel.math.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.ShaderProgramKey;
-import net.minecraft.client.gl.ShaderProgramKeys;
+//import net.minecraft.client.gl.ShaderProgramKey;
+//import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
@@ -14,6 +15,7 @@ import net.minecraft.client.util.NarratorManager;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 import win.baruna.blockmeter.measurebox.ClientMeasureBox;
@@ -36,14 +38,14 @@ public class OptionsGui extends Screen {
                 final int colorIndex = i * 4 + j;
                 this.addDrawableChild(new ColorButton(this.width / 2 - 44 + j * 22,
                         this.height / 2 - 88 + i * 22, 20, 20, null,
-                        Color.ofOpaque(DyeColor.byId(colorIndex)
+                        Color.ofOpaque(DyeColor.byIndex(colorIndex)
                                 .getMapColor().color), config.colorIndex == colorIndex, false,
                         button -> {
                             ClientMeasureBox.setColorIndex(colorIndex);
 
                             final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
                             if (currentBox != null)
-                                currentBox.setColor(DyeColor.byId(colorIndex));
+                                currentBox.setColor(DyeColor.byIndex(colorIndex));
                             MinecraftClient.getInstance().setScreen(null);
                         }));
             }
@@ -107,6 +109,9 @@ class ColorButton extends ButtonWidget {
     boolean selected;
     boolean texture;
     MutableText text;
+    private static final ButtonTextures TEXTURES = new ButtonTextures(
+            Identifier.ofVanilla("widget/button"), Identifier.ofVanilla("widget/button_disabled"), Identifier.ofVanilla("widget/button_highlighted")
+    );
 
     @Override
     public void onPress() {
@@ -136,23 +141,28 @@ class ColorButton extends ButtonWidget {
     @Override
     public void renderWidget(DrawContext context, final int int_1, final int int_2, final float float_1) {
 
-        Tessellator tessellator = Tessellator.getInstance();
-        var bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-
-        int r = this.color.getRed();
-        int g = this.color.getGreen();
-        int b = this.color.getBlue();
-        int a = texture ? 102 : 255;
-        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
-                .color(r, g, b, a);
-        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
-                .color(r, g, b, a);
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
-                .color(r, g, b, a);
-        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
-                .color(r, g, b, a);
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        context.drawGuiTexture(
+                RenderLayer::getGuiTextured,
+                TEXTURES.get(this.active, this.isSelected()),
+                x, y, width, height, color.getColor()
+        );
+//        Tessellator tessellator = Tessellator.getInstance();
+//        var bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+//        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+//
+//        int r = this.color.getRed();
+//        int g = this.color.getGreen();
+//        int b = this.color.getBlue();
+//        int a = texture ? 102 : 255;
+//        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
+//                .color(r, g, b, a);
+//        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
+//                .color(r, g, b, a);
+//        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
+//                .color(r, g, b, a);
+//        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
+//                .color(r, g, b, a);
+//        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 
         if (text != null) {
             boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;

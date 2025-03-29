@@ -1,13 +1,17 @@
 package win.baruna.blockmeter.measurebox;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.VertexFormat.DrawMode;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderPhase;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -18,17 +22,39 @@ import org.joml.Matrix4f;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalDouble;
+
+import static net.minecraft.client.gl.RenderPipelines.MATRICES_COLOR_SNIPPET;
 
 public class ClientMeasureBox extends MeasureBox {
-    private Box box;
-    private int argb;
+    private static final RenderLayer.MultiPhase DEBUG_LINE_STRIP = RenderLayer.of(
+            "debug_line_strip_no_depth",
+            1536,
+            RenderPipelines.register(
+                    RenderPipeline.builder(MATRICES_COLOR_SNIPPET)
+                            .withLocation("pipeline/debug_line_strip")
+                            .withVertexShader("core/position_color")
+                            .withFragmentShader("core/position_color")
+                            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                            .withCull(false)
+                            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.DEBUG_LINE_STRIP)
+                            .build()
+            ),
+            RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(4.0))).build(false)
 
+    );
+    private static final RenderLayer.MultiPhase DEBUG_QUADS = RenderLayer.of(
+            "debug_quads_no_depth", 1536, false, true, RenderPipelines.register(
+                    RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET).withLocation("pipeline/debug_quads").withCull(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build()
+            ), RenderLayer.MultiPhaseParameters.builder().build(false)
+    );
     @NotNull
     public MiningRestriction miningRestriction;
+    private Box box;
+    private int argb;
 
     protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension,
                                final DyeColor color, final boolean finished, final int mode, final int orientation) {
@@ -47,6 +73,32 @@ public class ClientMeasureBox extends MeasureBox {
         final ClientMeasureBox box = new ClientMeasureBox(block, block, dimension, getSelectedColor(), false, 0, 0);
         incrementColor();
         return box;
+    }
+
+    /**
+     * If enabled increments to next color
+     */
+    static private void incrementColor() {
+        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
+
+        if (conf.incrementColor) {
+            setColorIndex(conf.colorIndex + 1);
+        }
+    }
+
+    /**
+     * Accessor for the currently selected color
+     *
+     * @return currently selected color
+     */
+    static private DyeColor getSelectedColor() {
+        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
+        return DyeColor.byIndex(conf.colorIndex);
+    }
+
+    public static void setColorIndex(final int newColor) {
+        BlockMeterClient.getConfigManager().getConfig().colorIndex = Math.floorMod(newColor, DyeColor.values().length);
+        BlockMeterClient.getConfigManager().save();
     }
 
     /**
@@ -123,58 +175,38 @@ public class ClientMeasureBox extends MeasureBox {
         }
         final Vec3d pos = context.camera().getPos();
         var stack = context.matrixStack();
-
-        // FIXME This actually does nothing
-        RenderSystem.lineWidth(2.0f);
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.disableBlend();
+        var buffer = context.consumers().getBuffer(DEBUG_LINE_STRIP);
 
         stack.push();
         stack.translate(-pos.x, -pos.y, -pos.z);
         final Matrix4f model = stack.peek().getPositionMatrix();
 
-        final Tessellator tess = Tessellator.getInstance();
-
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-
-        BufferBuilder buffer = tess.begin(DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-        ;
         buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        ;
         buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        ;
         buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
-        ;
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-        ;
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
         buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            buffer = tess.begin(DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+            buffer = context.consumers().getBuffer(DEBUG_LINE_STRIP);
             buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
             buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-            BufferRenderer.drawWithGlobalProgram(buffer.end());
         }
-        RenderSystem.lineWidth(1.0f);
 
         this.drawLengths(context, boxCreatorName);
 
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
         stack.pop();
     }
 
@@ -278,41 +310,41 @@ public class ClientMeasureBox extends MeasureBox {
     private void drawBackground(final WorldRenderContext context, final double x, final double y, final double z,
                                 final float yaw,
                                 final float pitch, final String text, final Vec3d playerPos) {
-        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-        final var literalText = Text.literal(text);
-
-        float size = 0.03f;
-        final int constDist = 10;
-
-        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
-            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x)
-                    + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
-            if (dist > constDist)
-                size = dist * size / constDist;
-        }
-
-        var stack = context.matrixStack();
-        stack.push();
-        stack.translate(x, y + 0.15, z);
-        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - yaw));
-        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-pitch));
-        stack.scale(size, -size, 0.001f);
-        final int width = textRenderer.getWidth(literalText);
-        stack.translate((-width / 2f), 0.0, 0.0);
-        final Matrix4f model = stack.peek().getPositionMatrix();
-
-        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-        if (conf.backgroundForLabels) {
-            var buffer = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-            buffer.vertex(model, -1, -1, 0).color(argb);
-            buffer.vertex(model, -1, 8, 0).color(argb);
-            buffer.vertex(model, width, 8, 0).color(argb);
-            buffer.vertex(model, width, -1, 0).color(argb);
-            BufferRenderer.drawWithGlobalProgram(buffer.end());
-        }
-
-        stack.pop();
+        // TODO figure this out
+//        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+//
+//        final var literalText = Text.literal(text);
+//
+//        float size = 0.03f;
+//        final int constDist = 10;
+//
+//        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
+//            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x)
+//                    + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
+//            if (dist > constDist)
+//                size = dist * size / constDist;
+//        }
+//
+//        var stack = context.matrixStack();
+//        stack.push();
+//        stack.translate(x, y + 0.15, z);
+//        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - yaw));
+//        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-pitch));
+//        stack.scale(size, -size, 0.001f);
+//        final int width = textRenderer.getWidth(literalText);
+//        stack.translate((-width / 2f), 0.0, 0.0);
+//        final Matrix4f model = stack.peek().getPositionMatrix();
+//
+//        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
+//        if (conf.backgroundForLabels) {
+//            var buffer = context.consumers().getBuffer(DEBUG_QUADS);
+//            buffer.vertex(model, -1, -1, 0).color(argb);
+//            buffer.vertex(model, -1, 8, 0).color(argb);
+//            buffer.vertex(model, width, 8, 0).color(argb);
+//            buffer.vertex(model, width, -1, 0).color(argb);
+//        }
+//
+//        stack.pop();
     }
 
     private void drawText(final WorldRenderContext context, final double x, final double y, final double z,
@@ -345,11 +377,12 @@ public class ClientMeasureBox extends MeasureBox {
         int textColor = color.getSignColor();
 
         final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-        if (conf.backgroundForLabels) {
-            var color = new Color(argb);
-            float luminance = (0.299f * color.getRed() + 0.587f * color.getGreen() + 0.114f * color.getBlue());
-            textColor = luminance < 0.4f ? DyeColor.WHITE.getSignColor() : DyeColor.BLACK.getSignColor();
-        }
+        // TODO figure this out
+//        if (conf.backgroundForLabels) {
+//            var color = new Color(argb);
+//            float luminance = (0.299f * color.getRed() + 0.587f * color.getGreen() + 0.114f * color.getBlue());
+//            textColor = luminance < 0.4f ? DyeColor.WHITE.getSignColor() : DyeColor.BLACK.getSignColor();
+//        }
 
         final VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(new BufferAllocator(0));
         textRenderer.draw(
@@ -369,49 +402,8 @@ public class ClientMeasureBox extends MeasureBox {
         stack.pop();
     }
 
-    /**
-     * If enabled increments to next color
-     */
-    static private void incrementColor() {
-        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-
-        if (conf.incrementColor) {
-            setColorIndex(conf.colorIndex + 1);
-        }
-    }
-
-    /**
-     * Accessor for the currently selected color
-     *
-     * @return currently selected color
-     */
-    static private DyeColor getSelectedColor() {
-        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-        return DyeColor.byId(conf.colorIndex);
-    }
-
-    public static void setColorIndex(final int newColor) {
-        BlockMeterClient.getConfigManager().getConfig().colorIndex = Math.floorMod(newColor, DyeColor.values().length);
-        BlockMeterClient.getConfigManager().save();
-    }
-
     public boolean contains(BlockPos block) {
         return BlockBox.create(blockStart, blockEnd).contains(block);
-    }
-
-    private static class Line implements Comparable<Line> {
-        Box line;
-        double distance;
-
-        Line(final Box line, final Vec3d pos) {
-            this.line = line;
-            this.distance = line.getCenter().distanceTo(pos);
-        }
-
-        @Override
-        public int compareTo(final Line l) {
-            return Double.compare(this.distance, l.distance);
-        }
     }
 
     public enum MiningRestriction {
@@ -438,6 +430,21 @@ public class ClientMeasureBox extends MeasureBox {
                 }
                 default -> throw new IllegalArgumentException();
             }
+        }
+    }
+
+    private static class Line implements Comparable<Line> {
+        Box line;
+        double distance;
+
+        Line(final Box line, final Vec3d pos) {
+            this.line = line;
+            this.distance = line.getCenter().distanceTo(pos);
+        }
+
+        @Override
+        public int compareTo(final Line l) {
+            return Double.compare(this.distance, l.distance);
         }
     }
 }

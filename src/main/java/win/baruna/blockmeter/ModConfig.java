@@ -13,6 +13,7 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip(count = 3)
     public boolean sendBoxes = true;
     public boolean showBoxesWhenDisabled = false;
+    @ConfigEntry.Gui.Excluded
     public boolean backgroundForLabels = true;
 
     @ConfigEntry.BoundedDiscrete(max=200, min = 7)

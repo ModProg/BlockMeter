@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.10-SNAPSHOT"
+    id "fabric-loom" version "1.13-SNAPSHOT"
     // id "org.ajoberstar.grgit" version "3.1.1"
 }
 
@@ -14,9 +14,6 @@ repositories {
     maven { url = 'https://masa.dy.fi/maven' }
 }
 
-sourceCompatibility = 1.16
-targetCompatibility = 1.16
-
 ext.Version = new Properties()
 Version.load(file("version.properties").newReader())
 
@@ -27,8 +24,6 @@ Versions.load(file("Versionfiles/${Version['minecraftVersion']}.properties").new
 
 
 version = "${project.projectVersion}-${Version['minecraftVersion']}"
-
-archivesBaseName = "blockmeter"
 
 def getBranch() {
     if (System.getenv().GIT_BRANCH) {

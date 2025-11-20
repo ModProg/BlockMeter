@@ -4,7 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
@@ -19,6 +19,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
@@ -173,8 +174,8 @@ public class ClientMeasureBox extends MeasureBox {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }
-        final Vec3d pos = context.camera().getPos();
-        var stack = context.matrixStack();
+        final Vec3d pos = context.worldState().cameraRenderState.pos;
+        var stack = context.matrices();
         var buffer = context.consumers().getBuffer(DEBUG_LINE_STRIP);
 
         stack.push();
@@ -235,10 +236,9 @@ public class ClientMeasureBox extends MeasureBox {
         final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ)
                 .distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
 
-        var camera = context.camera();
-        final float yaw = camera.getYaw();
-        final float pitch = camera.getPitch();
-        final Vec3d pos = camera.getPos();
+        var camera = context.worldState().cameraRenderState;
+        final var orientation = camera.orientation;
+        final Vec3d pos = camera.pos;
 
         final List<Line> lines = new ArrayList<>();
         lines.add(new Line(
@@ -291,25 +291,24 @@ public class ClientMeasureBox extends MeasureBox {
         final String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName.getString() + " : ");
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            this.drawBackground(context, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch,
+            this.drawBackground(context, boxCenter, orientation,
                     playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawBackground(context, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + lengthZ, pos);
-        this.drawBackground(context, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + lengthX, pos);
-        this.drawBackground(context, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + lengthY, pos);
+        this.drawBackground(context, lineZ, orientation, playerNameStr + lengthZ, pos);
+        this.drawBackground(context, lineX, orientation, playerNameStr + lengthX, pos);
+        this.drawBackground(context, lineY, orientation, playerNameStr + lengthY, pos);
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            this.drawText(context, boxCenter.x, boxCenter.y, boxCenter.z, yaw, pitch,
+            this.drawText(context, boxCenter, orientation,
                     playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(context, lineZ.x, lineZ.y, lineZ.z, yaw, pitch, playerNameStr + lengthZ, pos);
-        this.drawText(context, lineX.x, lineX.y, lineX.z, yaw, pitch, playerNameStr + lengthX, pos);
-        this.drawText(context, lineY.x, lineY.y, lineY.z, yaw, pitch, playerNameStr + lengthY, pos);
+        this.drawText(context, lineZ, orientation, playerNameStr + lengthZ, pos);
+        this.drawText(context, lineX, orientation, playerNameStr + lengthX, pos);
+        this.drawText(context, lineY, orientation, playerNameStr + lengthY, pos);
     }
 
-    private void drawBackground(final WorldRenderContext context, final double x, final double y, final double z,
-                                final float yaw,
-                                final float pitch, final String text, final Vec3d playerPos) {
+    private void drawBackground(final WorldRenderContext context, Vec3d pos,
+                                Quaternionf orientation, final String text, final Vec3d playerPos) {
         // TODO figure this out
 //        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 //
@@ -347,9 +346,7 @@ public class ClientMeasureBox extends MeasureBox {
 //        stack.pop();
     }
 
-    private void drawText(final WorldRenderContext context, final double x, final double y, final double z,
-                          final float yaw,
-                          final float pitch, final String text, final Vec3d playerPos) {
+    private void drawText(final WorldRenderContext context, Vec3d pos, Quaternionf orientation, final String text, final Vec3d playerPos) {
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
         final var literalText = Text.literal(text);
@@ -358,17 +355,15 @@ public class ClientMeasureBox extends MeasureBox {
         final int constDist = 10;
 
         if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
-            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x)
-                    + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
+            var dist = (float) pos.distanceTo(playerPos);
             if (dist > constDist)
                 size = dist * size / constDist;
         }
 
-        var stack = context.matrixStack();
+        var stack = context.matrices();
         stack.push();
-        stack.translate(x, y + 0.15, z);
-        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - yaw));
-        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-pitch));
+        stack.translate(pos.x, pos.y + 0.15, pos.z);
+        stack.multiply(orientation);
         stack.scale(size, -size, 0.001f);
         final int width = textRenderer.getWidth(literalText);
         stack.translate((-width / 2f), 0.0, 0.0);

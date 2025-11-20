@@ -11,6 +11,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.text.MutableText;
@@ -90,7 +91,6 @@ public class OptionsGui extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-//        super.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
     }
 
@@ -115,12 +115,12 @@ class ColorButton extends ButtonWidget {
     );
 
     @Override
-    public void onPress() {
+    public void onPress(AbstractInput input) {
         System.out.println(color.getRed());
         System.out.println(color.getGreen());
         System.out.println(color.getBlue());
         System.err.println("IK WHAT YOU ARE DOING");
-        super.onPress();
+        super.onPress(input);
     }
 
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,

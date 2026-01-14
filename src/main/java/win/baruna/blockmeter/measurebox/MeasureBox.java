@@ -4,6 +4,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColorHelper;
 
 public class MeasureBox {
 
@@ -27,8 +28,8 @@ public class MeasureBox {
         return dimension;
     }
 
-    public DyeColor getColor() {
-        return color;
+    public int getColor() {
+        return ColorHelper.fullAlpha(color.getSignColor());
     }
 
     public boolean isFinished() {

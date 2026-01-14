@@ -38,7 +38,7 @@ public class SelectBoxGui extends Screen {
 
             this.addDrawableChild(new ColorButton(this.width / 2 - (BUTTONWIDTH) / 2,
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
-                    Color.ofOpaque(box.getColor().getMapColor().color), false, true, button -> {
+                    Color.ofOpaque(box.getColor()), false, true, button -> {
                 BlockMeterClient.getInstance().editBox(box, block);
                 MinecraftClient.getInstance().setScreen(null);
             }));

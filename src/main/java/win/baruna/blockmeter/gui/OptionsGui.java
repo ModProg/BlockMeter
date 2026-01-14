@@ -125,7 +125,7 @@ class ColorButton extends ButtonWidget {
 
     ColorButton(final int x, final int y, final int width, final int height, final MutableText label, final Color color,
                 final boolean selected, boolean texture, PressAction onPress) {
-        super(x, y, width, height, Text.literal(""), onPress, DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, width, height, net.minecraft.text.Text.empty(), onPress, DEFAULT_NARRATION_SUPPLIER);
         this.selected = false;
         this.color = color;
         this.x = x + 2;
@@ -136,35 +136,15 @@ class ColorButton extends ButtonWidget {
         this.selected = selected;
         this.text = label;
         this.texture = texture;
-        // this.color = Color.ofRGBA(0.5f, 1f, 1f, 1f);
     }
 
     @Override
-    public void renderWidget(DrawContext context, final int int_1, final int int_2, final float float_1) {
-
+    protected void drawIcon(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         context.drawGuiTexture(
                 RenderPipelines.GUI_TEXTURED,
                 TEXTURES.get(this.active, this.isSelected()),
                 x, y, width, height, color.getColor()
         );
-//        Tessellator tessellator = Tessellator.getInstance();
-//        var bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-//        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-//
-//        int r = this.color.getRed();
-//        int g = this.color.getGreen();
-//        int b = this.color.getBlue();
-//        int a = texture ? 102 : 255;
-//        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
-//                .color(r, g, b, a);
-//        bufferBuilder.vertex(this.x - (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
-//                .color(r, g, b, a);
-//        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y + this.height + (texture ? 1 : 0), 0f)
-//                .color(r, g, b, a);
-//        bufferBuilder.vertex(this.x + this.width + (texture ? 1 : 0), this.y - (texture ? 1 : 0), 0f)
-//                .color(r, g, b, a);
-//        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
         if (text != null) {
             boolean dark = (0.299f * color.getRed() + 0.587f * color.getBlue() + 0.114f * color.getRed()) / 255f < 0.8f;
 
@@ -180,5 +160,6 @@ class ColorButton extends ButtonWidget {
                 context.drawText(textRenderer, text, x + width / 2 - text_width / 2, y + height / 2 - 4, 0, false);
             }
         }
+        //drawButton(context);
     }
 }

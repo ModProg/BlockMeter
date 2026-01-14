@@ -19,7 +19,6 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.Window;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -40,10 +39,35 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+
 @SuppressWarnings("UnstableApiUsage")
 public class BlockMeterClient implements ClientModInitializer, InputUtils {
     /// Currently running Instance of BlockMeterClient
     private static BlockMeterClient instance;
+    private static ConfigManager<ModConfig> confMgr;
+    /// The List of Measuring-Boxes currently created by the current User
+    private final List<ClientMeasureBox> boxes = new ArrayList<>();
+    /// The QuickMenu for changing of Color etc.
+    private final OptionsGui quickMenu;
+    /// The QuickMenu for selecting on of multiple Boxes.
+    private final SelectBoxGui selectBoxGui;
+    private final EditBoxGui editBoxGui;
+    /// The current state of the BlockMeter (activated/deactivated)
+    private boolean active;
+    /// The Item selected as BlockMeter
+    private Item currentItem;
+    /// A Map of Lists of Boxes currently created by other Users, with Text being the
+    /// Username
+    private Map<String, List<ClientMeasureBox>> otherUsersBoxes;
+
+    public BlockMeterClient() {
+        active = false;
+        quickMenu = new OptionsGui();
+        selectBoxGui = new SelectBoxGui();
+        editBoxGui = new EditBoxGui();
+        otherUsersBoxes = null;
+        BlockMeterClient.instance = this;
+    }
 
     /// Currently running Instance of BlockMeterClient
     public static BlockMeterClient getInstance() {
@@ -54,12 +78,6 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
         return Objects.requireNonNull(MinecraftClient.getInstance().player);
     }
 
-    private static Window getWindow() {
-        return MinecraftClient.getInstance().getWindow();
-    }
-
-    private static ConfigManager<ModConfig> confMgr;
-
     /// Accessor for the ModConfigManager
     public static ConfigManager<ModConfig> getConfigManager() {
         return confMgr;
@@ -67,35 +85,6 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
 
     public static ModConfig getConfig() {
         return confMgr.getConfig();
-    }
-
-    /// The current state of the BlockMeter (activated/deactivated)
-    private boolean active;
-
-    /// The Item selected as BlockMeter
-    private Item currentItem;
-
-    /// The List of Measuring-Boxes currently created by the current User
-    private final List<ClientMeasureBox> boxes = new ArrayList<>();
-
-    /// A Map of Lists of Boxes currently created by other Users, with Text being the
-    /// Username
-    private Map<String, List<ClientMeasureBox>> otherUsersBoxes;
-
-    /// The QuickMenu for changing of Color etc.
-    private final OptionsGui quickMenu;
-
-    /// The QuickMenu for selecting on of multiple Boxes.
-    private final SelectBoxGui selectBoxGui;
-    private final EditBoxGui editBoxGui;
-
-    public BlockMeterClient() {
-        active = false;
-        quickMenu = new OptionsGui();
-        selectBoxGui = new SelectBoxGui();
-        editBoxGui = new EditBoxGui();
-        otherUsersBoxes = null;
-        BlockMeterClient.instance = this;
     }
 
     /**
@@ -147,8 +136,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
      * Removes the last box
      */
     public boolean undo() {
-        if (this.boxes.isEmpty())
-            return false;
+        if (this.boxes.isEmpty()) return false;
 
         this.boxes.remove(this.boxes.size() - 1);
         sendBoxList();
@@ -167,29 +155,20 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
 
         final ModConfig cfg = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
-        // MEH! but this seems to be needed to get the first background
-        // rectangle
-        //        client.textRenderer.draw("XXX", stack,  -100, -100, 0);
-
-        if (this.active || cfg.showBoxesWhenDisabled)
+        if ((this.active || cfg.showBoxesWhenDisabled)) {
             if (cfg.showOtherUsersBoxes) {
                 if (otherUsersBoxes != null && !otherUsersBoxes.isEmpty()) {
-                    this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(
-                            context, currentDimension, Text.literal(playerText))));
+                    this.otherUsersBoxes.forEach((playerText, boxList) -> boxList.forEach(box -> box.render(context, currentDimension, playerText)));
                     this.boxes.forEach(box -> {
-                        if (!box.isFinished())
-                            box.render(context, currentDimension);
+                        if (!box.isFinished()) box.render(context, currentDimension);
                     });
                 }
-                if (!cfg.sendBoxes)
-                    this.boxes.forEach(box -> {
-                        if (box.isFinished())
-                            box.render(context, currentDimension, getPlayer().getDisplayName());
-                        else
-                            box.render(context, currentDimension);
-                    });
-            } else
-                this.boxes.forEach(box -> box.render(context, currentDimension));
+                if (!cfg.sendBoxes) this.boxes.forEach(box -> {
+                    if (box.isFinished()) box.render(context, currentDimension, getPlayer().getDisplayName().getLiteralString());
+                    else box.render(context, currentDimension);
+                });
+            } else this.boxes.forEach(box -> box.render(context, currentDimension));
+        }
 
     }
 
@@ -203,8 +182,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
     /**
      * Gets Triggered when the Player connects to the Server
      */
-    private void onConnected(ClientPlayNetworkHandler clientPlayNetworkHandler, PacketSender packetSender,
-                             MinecraftClient minecraftClient) {
+    private void onConnected(ClientPlayNetworkHandler clientPlayNetworkHandler, PacketSender packetSender, MinecraftClient minecraftClient) {
         sendBoxList(); // to make the server send other user's boxes
     }
 
@@ -220,18 +198,13 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
     @Override
     public void onInitializeClient() {
         var category = KeyBinding.Category.create(Identifier.of("category.blockmeter.key"));
-        var window = MinecraftClient.getInstance().getWindow();
-        final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.blockmeter.assign",
-                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, category));
-        final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_LEFT_ALT, category);
+        final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.blockmeter.assign", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, category));
+        final KeyBinding keyBindingMenu = new KeyBinding("key.blockmeter.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, category);
         KeyBindingHelper.registerKeyBinding(keyBindingMenu);
 
-        final KeyBinding keyBindingMeasureWithItem = new KeyBinding("key.blockmeter.useItem", -1,
-                category);
+        final KeyBinding keyBindingMeasureWithItem = new KeyBinding("key.blockmeter.useItem", -1, category);
         KeyBindingHelper.registerKeyBinding(keyBindingMeasureWithItem);
-        final KeyBinding keyBindingMeasure = new KeyBinding("key.blockmeter.measure", InputUtil.Type.MOUSE,
-                GLFW.GLFW_MOUSE_BUTTON_4, category);
+        final KeyBinding keyBindingMeasure = new KeyBinding("key.blockmeter.measure", InputUtil.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_4, category);
         KeyBindingHelper.registerKeyBinding(keyBindingMeasure);
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(this::renderOverlay);
@@ -248,11 +221,9 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
         ClientTickEvents.START_CLIENT_TICK.register(e -> {
             if (keyBinding.wasPressed()) {
                 if (isShift()) {
-                    if (undo())
-                        getPlayer().sendMessage(Text.translatable("blockmeter.clearLast"), true);
+                    if (undo()) getPlayer().sendMessage(Text.translatable("blockmeter.clearLast"), true);
                 } else if (isCtrl()) {
-                    if (clear())
-                        getPlayer().sendMessage(Text.translatable("blockmeter.clearAll"), true);
+                    if (clear()) getPlayer().sendMessage(Text.translatable("blockmeter.clearAll"), true);
                 } else if (this.active) {
                     disable();
                     getPlayer().sendMessage(Text.translatable("blockmeter.toggle.off"), true);
@@ -260,9 +231,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
                     active = true;
                     ItemStack itemStack = getPlayer().getMainHandStack();
                     currentItem = itemStack.getItem();
-                    getPlayer().sendMessage(
-                            Text.translatable("blockmeter.toggle.on", itemStack.getItemName()),
-                            true);
+                    getPlayer().sendMessage(Text.translatable("blockmeter.toggle.on", itemStack.getItemName()), true);
                 }
             }
 
@@ -290,10 +259,10 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
                     pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), 1) == 1;
                 } else {
                     switch (key.getCategory()) {
-                        case KEYSYM, SCANCODE -> pressed = GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow()
-                                .getHandle(), key.getCode()) == 1;
-                        case MOUSE -> pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow()
-                                .getHandle(), key.getCode()) == 1;
+                        case KEYSYM, SCANCODE ->
+                                pressed = GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
+                        case MOUSE ->
+                                pressed = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key.getCode()) == 1;
                     }
                 }
                 if (pressed) {
@@ -322,12 +291,8 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
             return ActionResult.PASS;
         });
         AttackBlockCallback.EVENT.register(((player, world, hand, pos, direction) -> {
-            var inside = this.boxes.stream()
-                    .filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Inside)
-                    .anyMatch(box -> !box.contains(pos));
-            var outside = this.boxes.stream()
-                    .filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Outside)
-                    .anyMatch(box -> box.contains(pos));
+            var inside = this.boxes.stream().filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Inside).anyMatch(box -> !box.contains(pos));
+            var outside = this.boxes.stream().filter(box -> box.miningRestriction == ClientMeasureBox.MiningRestriction.Outside).anyMatch(box -> box.contains(pos));
             if (!isShift() && (inside || outside)) {
                 return ActionResult.FAIL;
             } else {
@@ -377,8 +342,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
                         break;
                 }
             } else {
-                final ClientMeasureBox box = ClientMeasureBox.getBox(block,
-                        getPlayer().getEntityWorld().getRegistryKey().getValue());
+                final ClientMeasureBox box = ClientMeasureBox.getBox(block, getPlayer().getEntityWorld().getRegistryKey().getValue());
                 this.boxes.add(box);
             }
         } else {
@@ -402,8 +366,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
      * Sends BoxList to Server if enabled in the config
      */
     private void sendBoxList() {
-        if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes)
-            return;
+        if (!AutoConfig.getConfigHolder(ModConfig.class).getConfig().sendBoxes) return;
         ClientPlayNetworking.send(new BoxPayload(Map.of("", new ArrayList<>(boxes))));
     }
 
@@ -411,10 +374,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
      * handles the BoxList of other Players
      */
     private void handleServerBoxList(BoxPayload payload, ClientPlayNetworking.Context context) {
-        context.client().executeTask(() -> otherUsersBoxes = payload.receivedBoxes().entrySet().stream()
-                .map(entry -> Pair.of(entry.getKey(), entry.getValue().stream().map(ClientMeasureBox::new)
-                        .toList()))
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+        context.client().executeTask(() -> otherUsersBoxes = payload.receivedBoxes().entrySet().stream().map(entry -> Pair.of(entry.getKey(), entry.getValue().stream().map(ClientMeasureBox::new).toList())).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
     }
 
 }

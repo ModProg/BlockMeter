@@ -1,64 +1,32 @@
 package win.baruna.blockmeter.measurebox;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.BufferAllocator;
-import net.minecraft.text.Text;
+import net.minecraft.client.render.DrawStyle;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.debug.gizmo.GizmoDrawing;
+import net.minecraft.world.debug.gizmo.TextGizmo;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.OptionalDouble;
-
-import static net.minecraft.client.gl.RenderPipelines.POSITION_COLOR_SNIPPET;
 
 public class ClientMeasureBox extends MeasureBox {
-    private static final RenderLayer.MultiPhase DEBUG_LINE_STRIP = RenderLayer.of(
-            "debug_line_strip_no_depth",
-            1536,
-            RenderPipelines.register(
-                    RenderPipeline.builder(POSITION_COLOR_SNIPPET)
-                            .withLocation("pipeline/debug_line_strip")
-                            .withVertexShader("core/position_color")
-                            .withFragmentShader("core/position_color")
-                            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-                            .withCull(false)
-                            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.DEBUG_LINE_STRIP)
-                            .build()
-            ),
-            RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(4.0))).build(false)
 
-    );
-    private static final RenderLayer.MultiPhase DEBUG_QUADS = RenderLayer.of(
-            "debug_quads_no_depth", 1536, false, true, RenderPipelines.register(
-                    RenderPipeline.builder(POSITION_COLOR_SNIPPET).withLocation("pipeline/debug_quads").withCull(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build()
-            ), RenderLayer.MultiPhaseParameters.builder().build(false)
-    );
     @NotNull
     public MiningRestriction miningRestriction;
     private Box box;
     private int argb;
 
-    protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension,
-                               final DyeColor color, final boolean finished, final int mode, final int orientation) {
+    protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension, final DyeColor color, final boolean finished, final int mode, final int orientation) {
         super(blockStart, blockEnd, dimension, color, finished, mode, orientation);
         miningRestriction = MiningRestriction.Off;
         argb = color.getEntityColor() | 0xFF000000;
@@ -66,8 +34,7 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     public ClientMeasureBox(MeasureBox measureBox) {
-        this(measureBox.blockStart, measureBox.blockEnd, measureBox.dimension, measureBox.color, measureBox.finished,
-                measureBox.mode, measureBox.orientation);
+        this(measureBox.blockStart, measureBox.blockEnd, measureBox.dimension, measureBox.color, measureBox.finished, measureBox.mode, measureBox.orientation);
     }
 
     public static ClientMeasureBox getBox(final BlockPos block, final Identifier dimension) {
@@ -145,9 +112,7 @@ public class ClientMeasureBox extends MeasureBox {
      * @return true if block is a corner
      */
     public boolean isCorner(final BlockPos block) {
-        return (block.getX() == blockStart.getX() || block.getX() == blockEnd.getX())
-                && (block.getY() == blockStart.getY() || block.getY() == blockEnd.getY())
-                && (block.getZ() == blockStart.getZ() || block.getZ() == blockEnd.getZ());
+        return (block.getX() == blockStart.getX() || block.getX() == blockEnd.getX()) && (block.getY() == blockStart.getY() || block.getY() == blockEnd.getY()) && (block.getZ() == blockStart.getZ() || block.getZ() == blockEnd.getZ());
     }
 
     /**
@@ -165,50 +130,23 @@ public class ClientMeasureBox extends MeasureBox {
         finished = false;
     }
 
-    public void render(final WorldRenderContext context, final Identifier currentDimension) {
+    public void render(WorldRenderContext context, final Identifier currentDimension) {
         render(context, currentDimension, null);
     }
 
-    public void render(final WorldRenderContext context, final Identifier currentDimension,
-                       final Text boxCreatorName) {
+    public void render(WorldRenderContext context, final Identifier currentDimension, final String boxCreatorName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }
-        final Vec3d pos = context.worldState().cameraRenderState.pos;
-        var stack = context.matrices();
-        var buffer = context.consumers().getBuffer(DEBUG_LINE_STRIP);
 
-        stack.push();
-        stack.translate(-pos.x, -pos.y, -pos.z);
-        final Matrix4f model = stack.peek().getPositionMatrix();
-
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.minZ).color(argb);
-        buffer.vertex(model, (float) this.box.maxX, (float) this.box.minY, (float) this.box.minZ).color(argb);
+        GizmoDrawing.box(this.box, DrawStyle.stroked(getColor(), 2f)).ignoreOcclusion();
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            buffer = context.consumers().getBuffer(DEBUG_LINE_STRIP);
-            buffer.vertex(model, (float) this.box.minX, (float) this.box.minY, (float) this.box.minZ).color(argb);
-            buffer.vertex(model, (float) this.box.maxX, (float) this.box.maxY, (float) this.box.maxZ).color(argb);
+            GizmoDrawing.line(box.getMinPos(), box.getMaxPos(), getColor()).ignoreOcclusion();
         }
 
         this.drawLengths(context, boxCreatorName);
 
-        stack.pop();
     }
 
     /**
@@ -222,179 +160,64 @@ public class ClientMeasureBox extends MeasureBox {
         final int by = this.blockEnd.getY();
         final int bz = this.blockEnd.getZ();
 
-        this.box = new Box(Math.min(ax, bx), Math.min(ay, by), Math.min(az, bz),
-                Math.max(ax, bx) + 1, Math.max(ay, by) + 1, Math.max(az, bz) + 1);
+        this.box = new Box(Math.min(ax, bx), Math.min(ay, by), Math.min(az, bz), Math.max(ax, bx) + 1, Math.max(ay, by) + 1, Math.max(az, bz) + 1);
 
     }
 
-    private void drawLengths(final WorldRenderContext context, final Text boxCreatorName) {
+    private void drawLengths(WorldRenderContext context, final String boxCreatorName) {
         final int lengthX = (int) this.box.getLengthX();
         final int lengthY = (int) this.box.getLengthY();
         final int lengthZ = (int) this.box.getLengthZ();
 
         final Vec3d boxCenter = this.box.getCenter();
-        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ)
-                .distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
+        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ).distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
 
-        var camera = context.worldState().cameraRenderState;
-        final var orientation = camera.orientation;
-        final Vec3d pos = camera.pos;
+        final Vec3d pos = context.worldState().cameraRenderState.pos;
 
         final List<Line> lines = new ArrayList<>();
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ),
-                pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new Box(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineZ = lines.get(0).line.getCenter();
+        final Vec3d lineZ = lines.getFirst().line.getCenter();
 
         lines.clear();
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ),
-                pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineY = lines.get(0).line.getCenter();
+        final Vec3d lineY = lines.getFirst().line.getCenter();
 
         lines.clear();
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ),
-                pos));
-        lines.add(new Line(
-                new Box(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ),
-                pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ), pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineX = lines.get(0).line.getCenter();
+        final Vec3d lineX = lines.getFirst().line.getCenter();
 
-        final String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName.getString() + " : ");
-
-        if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            this.drawBackground(context, boxCenter, orientation,
-                    playerNameStr + String.format("%.2f", diagonalLength), pos);
-        }
-        this.drawBackground(context, lineZ, orientation, playerNameStr + lengthZ, pos);
-        this.drawBackground(context, lineX, orientation, playerNameStr + lengthX, pos);
-        this.drawBackground(context, lineY, orientation, playerNameStr + lengthY, pos);
+        final String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName + ": ");
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            this.drawText(context, boxCenter, orientation,
-                    playerNameStr + String.format("%.2f", diagonalLength), pos);
+            this.drawText(boxCenter, playerNameStr + String.format("%.2f", diagonalLength), pos);
         }
-        this.drawText(context, lineZ, orientation, playerNameStr + lengthZ, pos);
-        this.drawText(context, lineX, orientation, playerNameStr + lengthX, pos);
-        this.drawText(context, lineY, orientation, playerNameStr + lengthY, pos);
+        this.drawText(lineZ, playerNameStr + lengthZ, pos);
+        this.drawText(lineX, playerNameStr + lengthX, pos);
+        this.drawText(lineY, playerNameStr + lengthY, pos);
     }
 
-    private void drawBackground(final WorldRenderContext context, Vec3d pos,
-                                Quaternionf orientation, final String text, final Vec3d playerPos) {
-        // TODO figure this out
-//        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-//
-//        final var literalText = Text.literal(text);
-//
-//        float size = 0.03f;
-//        final int constDist = 10;
-//
-//        if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
-//            final float dist = (float) Math.sqrt((x - playerPos.x) * (x - playerPos.x)
-//                    + (y - playerPos.y) * (y - playerPos.y) + (z - playerPos.z) * (z - playerPos.z));
-//            if (dist > constDist)
-//                size = dist * size / constDist;
-//        }
-//
-//        var stack = context.matrixStack();
-//        stack.push();
-//        stack.translate(x, y + 0.15, z);
-//        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - yaw));
-//        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-pitch));
-//        stack.scale(size, -size, 0.001f);
-//        final int width = textRenderer.getWidth(literalText);
-//        stack.translate((-width / 2f), 0.0, 0.0);
-//        final Matrix4f model = stack.peek().getPositionMatrix();
-//
-//        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-//        if (conf.backgroundForLabels) {
-//            var buffer = context.consumers().getBuffer(DEBUG_QUADS);
-//            buffer.vertex(model, -1, -1, 0).color(argb);
-//            buffer.vertex(model, -1, 8, 0).color(argb);
-//            buffer.vertex(model, width, 8, 0).color(argb);
-//            buffer.vertex(model, width, -1, 0).color(argb);
-//        }
-//
-//        stack.pop();
-    }
-
-    private void drawText(final WorldRenderContext context, Vec3d pos, Quaternionf orientation, final String text, final Vec3d playerPos) {
-        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-        final var literalText = Text.literal(text);
-
-        float size = 0.03f;
+    private void drawText(Vec3d pos, final String text, final Vec3d playerPos) {
+        float size = .3f;
         final int constDist = 10;
 
         if (AutoConfig.getConfigHolder(ModConfig.class).getConfig().minimalLabelSize) {
             var dist = (float) pos.distanceTo(playerPos);
-            if (dist > constDist)
-                size = dist * size / constDist;
+            if (dist > constDist) size = dist * size / constDist;
         }
 
-        var stack = context.matrices();
-        stack.push();
-        stack.translate(pos.x, pos.y + 0.15, pos.z);
-        stack.multiply(orientation);
-        stack.scale(size, -size, 0.001f);
-        final int width = textRenderer.getWidth(literalText);
-        stack.translate((-width / 2f), 0.0, 0.0);
-        final Matrix4f model = stack.peek().getPositionMatrix();
-
-        int textColor = color.getSignColor();
-
-        final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-        // TODO figure this out
-//        if (conf.backgroundForLabels) {
-//            var color = new Color(argb);
-//            float luminance = (0.299f * color.getRed() + 0.587f * color.getGreen() + 0.114f * color.getBlue());
-//            textColor = luminance < 0.4f ? DyeColor.WHITE.getSignColor() : DyeColor.BLACK.getSignColor();
-//        }
-
-        final VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(new BufferAllocator(0));
-        textRenderer.draw(
-                literalText,
-                0.0f,
-                0.0f,
-                textColor,
-                !conf.backgroundForLabels, // shadow
-                model, // matrix
-                immediate, // draw buffer
-                TextRenderer.TextLayerType.SEE_THROUGH,
-                0, // backgroundColor => underlineColor,
-                15728880 // light
-        );
-        immediate.draw();
-
-        stack.pop();
+        GizmoDrawing.text(text, pos, TextGizmo.Style.left(getColor()).scaled(size)).ignoreOcclusion();
     }
 
     public boolean contains(BlockPos block) {
@@ -402,9 +225,7 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     public enum MiningRestriction {
-        Off("options.off"),
-        Inside("blockmeter.restrictMining.inside"),
-        Outside("blockmeter.restrictMining.outside");
+        Off("options.off"), Inside("blockmeter.restrictMining.inside"), Outside("blockmeter.restrictMining.outside");
         public final String translation;
 
         MiningRestriction(String translation) {

@@ -26,32 +26,31 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: true
 
     - name: Setup Java
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: ${{matrix.java}}
 
-    - name: Gradle Build
+    - name: Gradle Setup
       if: ${{ !env.ACT }}
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/actions/setup-gradle@v6
       with:
         gradle-version: ${{ matrix.gradle }}
-        arguments: build
-    - name: Gradle Build Uncached
+    - name: Gradle Setup Uncached
       if: ${{ env.ACT }}
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/actions/setup-gradle@v6
       with:
         gradle-version: ${{ matrix.gradle }}
-        arguments: build
         cache-disabled: true
+    - run: gradle build
     - name: Upload Artefact
       if: ${{ matrix.upload }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         path: |
           build/libs/*.jar

@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import win.baruna.blockmeter.measurebox.MeasureBox;
 
 import java.util.HashMap;
@@ -24,12 +24,12 @@ public class BlockMeterServer implements ModInitializer {
     public void onInitialize() {
 
         instance = this;
-        PayloadTypeRegistry.playS2C().register(BoxPayload.ID, BoxPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(BoxPayload.ID, BoxPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(BoxPayload.ID, BoxPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(BoxPayload.ID, BoxPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(BoxPayload.ID, this::processClientPacket);
         ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
         ServerPlayConnectionEvents.DISCONNECT.register((b, a) -> {
-            System.out.printf("DISCONNECTD %s%n", b.player.getUuid());
+            System.out.printf("DISCONNECTD %s%n", b.player.getUUID());
         });
     }
 
@@ -38,10 +38,10 @@ public class BlockMeterServer implements ModInitializer {
      *
      * @param player Player to be removed
      */
-    public static void removePlayer(ServerPlayerEntity player) {
+    public static void removePlayer(ServerPlayer player) {
         if (instance != null) {
-            if (instance.playerBoxes.containsKey(player.getUuid())) {
-                instance.playerBoxes.remove(player.getUuid());
+            if (instance.playerBoxes.containsKey(player.getUUID())) {
+                instance.playerBoxes.remove(player.getUUID());
                 instance.informAllPlayers();
             }
         }
@@ -62,11 +62,11 @@ public class BlockMeterServer implements ModInitializer {
         try {
             var boxes = payload.receivedBoxes().values().stream().findFirst().orElse(List.of());
             synchronized (playerBoxes) {
-                playerBoxes.put(context.player().getUuid(), boxes);
+                playerBoxes.put(context.player().getUUID(), boxes);
             }
         } catch (IllegalArgumentException ex) {
             synchronized (playerBoxes) {
-                playerBoxes.remove(context.player().getUuid());
+                playerBoxes.remove(context.player().getUUID());
             }
         }
 
@@ -78,7 +78,7 @@ public class BlockMeterServer implements ModInitializer {
      */
     private void informAllPlayers() {
         BoxPayload data = buildS2CPacket();
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             ServerPlayNetworking.send(player, data);
         }
     }
@@ -92,9 +92,9 @@ public class BlockMeterServer implements ModInitializer {
         var data = new HashMap<String, List<MeasureBox>>();
         synchronized (playerBoxes) {
             for (var playerBoxEntry : playerBoxes.entrySet()) {
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerBoxEntry.getKey());
+                ServerPlayer player = server.getPlayerList().getPlayer(playerBoxEntry.getKey());
                 if (player != null) {
-                    data.put(player.getNameForScoreboard(), playerBoxEntry.getValue());
+                    data.put(player.getScoreboardName(), playerBoxEntry.getValue());
                 }
             }
         }

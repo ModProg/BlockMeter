@@ -1,16 +1,16 @@
 package win.baruna.blockmeter.measurebox;
 
 import me.shedaniel.autoconfig.AutoConfig;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.minecraft.client.render.DrawStyle;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.debug.gizmo.GizmoDrawing;
-import net.minecraft.world.debug.gizmo.TextGizmo;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
+import net.minecraft.gizmos.TextGizmo;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import win.baruna.blockmeter.BlockMeterClient;
 import win.baruna.blockmeter.ModConfig;
@@ -23,13 +23,13 @@ public class ClientMeasureBox extends MeasureBox {
 
     @NotNull
     public MiningRestriction miningRestriction;
-    private Box box;
+    private AABB box;
     private int argb;
 
     protected ClientMeasureBox(final BlockPos blockStart, final BlockPos blockEnd, final Identifier dimension, final DyeColor color, final boolean finished, final int mode, final int orientation) {
         super(blockStart, blockEnd, dimension, color, finished, mode, orientation);
         miningRestriction = MiningRestriction.Off;
-        argb = color.getEntityColor() | 0xFF000000;
+        argb = color.getTextureDiffuseColor() | 0xFF000000;
         updateBoundingBox();
     }
 
@@ -61,7 +61,7 @@ public class ClientMeasureBox extends MeasureBox {
      */
     static private DyeColor getSelectedColor() {
         final ModConfig conf = BlockMeterClient.getConfigManager().getConfig();
-        return DyeColor.byIndex(conf.colorIndex);
+        return DyeColor.byId(conf.colorIndex);
     }
 
     public static void setColorIndex(final int newColor) {
@@ -102,7 +102,7 @@ public class ClientMeasureBox extends MeasureBox {
      */
     public void setColor(final DyeColor color) {
         this.color = color;
-        this.argb = color.getEntityColor() | 0xFF000000;
+        this.argb = color.getTextureDiffuseColor() | 0xFF000000;
     }
 
     /**
@@ -130,19 +130,19 @@ public class ClientMeasureBox extends MeasureBox {
         finished = false;
     }
 
-    public void render(WorldRenderContext context, final Identifier currentDimension) {
+    public void render(LevelRenderContext context, final Identifier currentDimension) {
         render(context, currentDimension, null);
     }
 
-    public void render(WorldRenderContext context, final Identifier currentDimension, final String boxCreatorName) {
+    public void render(LevelRenderContext context, final Identifier currentDimension, final String boxCreatorName) {
         if (!(currentDimension.equals(this.dimension))) {
             return;
         }
 
-        GizmoDrawing.box(this.box, DrawStyle.stroked(getColor(), 2f)).ignoreOcclusion();
+        Gizmos.cuboid(this.box, GizmoStyle.stroke(getColor(), 2f)).setAlwaysOnTop();
 
         if (BlockMeterClient.getConfigManager().getConfig().innerDiagonal) {
-            GizmoDrawing.line(box.getMinPos(), box.getMaxPos(), getColor()).ignoreOcclusion();
+            Gizmos.line(box.getMinPosition(), box.getMaxPosition(), getColor()).setAlwaysOnTop();
         }
 
         this.drawLengths(context, boxCreatorName);
@@ -160,43 +160,43 @@ public class ClientMeasureBox extends MeasureBox {
         final int by = this.blockEnd.getY();
         final int bz = this.blockEnd.getZ();
 
-        this.box = new Box(Math.min(ax, bx), Math.min(ay, by), Math.min(az, bz), Math.max(ax, bx) + 1, Math.max(ay, by) + 1, Math.max(az, bz) + 1);
+        this.box = new AABB(Math.min(ax, bx), Math.min(ay, by), Math.min(az, bz), Math.max(ax, bx) + 1, Math.max(ay, by) + 1, Math.max(az, bz) + 1);
 
     }
 
-    private void drawLengths(WorldRenderContext context, final String boxCreatorName) {
-        final int lengthX = (int) this.box.getLengthX();
-        final int lengthY = (int) this.box.getLengthY();
-        final int lengthZ = (int) this.box.getLengthZ();
+    private void drawLengths(LevelRenderContext context, final String boxCreatorName) {
+        final int lengthX = (int) this.box.getXsize();
+        final int lengthY = (int) this.box.getYsize();
+        final int lengthZ = (int) this.box.getZsize();
 
-        final Vec3d boxCenter = this.box.getCenter();
-        final double diagonalLength = new Vec3d(this.box.minX, this.box.minY, this.box.minZ).distanceTo(new Vec3d(this.box.maxX, this.box.maxY, this.box.maxZ));
+        final Vec3 boxCenter = this.box.getCenter();
+        final double diagonalLength = new Vec3(this.box.minX, this.box.minY, this.box.minZ).distanceTo(new Vec3(this.box.maxX, this.box.maxY, this.box.maxZ));
 
-        final Vec3d pos = context.worldState().cameraRenderState.pos;
+        final Vec3 pos = context.levelState().cameraRenderState.pos;
 
         final List<Line> lines = new ArrayList<>();
-        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ), pos));
-        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
-        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
-        lines.add(new Line(new Box(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.maxY, this.box.minZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.maxX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineZ = lines.getFirst().line.getCenter();
+        final Vec3 lineZ = lines.getFirst().line.getCenter();
 
         lines.clear();
-        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ), pos));
-        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
-        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
-        lines.add(new Line(new Box(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.minY, this.box.minZ, this.box.minX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.minY, this.box.maxZ, this.box.minX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.maxX, this.box.minY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new AABB(this.box.maxX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineY = lines.getFirst().line.getCenter();
+        final Vec3 lineY = lines.getFirst().line.getCenter();
 
         lines.clear();
-        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ), pos));
-        lines.add(new Line(new Box(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
-        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
-        lines.add(new Line(new Box(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.minY, this.box.minZ, this.box.maxX, this.box.minY, this.box.minZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.minY, this.box.maxZ, this.box.maxX, this.box.minY, this.box.maxZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.maxY, this.box.minZ, this.box.maxX, this.box.maxY, this.box.minZ), pos));
+        lines.add(new Line(new AABB(this.box.minX, this.box.maxY, this.box.maxZ, this.box.maxX, this.box.maxY, this.box.maxZ), pos));
         Collections.sort(lines);
-        final Vec3d lineX = lines.getFirst().line.getCenter();
+        final Vec3 lineX = lines.getFirst().line.getCenter();
 
         final String playerNameStr = (boxCreatorName == null ? "" : boxCreatorName + ": ");
 
@@ -208,7 +208,7 @@ public class ClientMeasureBox extends MeasureBox {
         this.drawText(lineY, playerNameStr + lengthY, pos);
     }
 
-    private void drawText(Vec3d pos, final String text, final Vec3d playerPos) {
+    private void drawText(Vec3 pos, final String text, final Vec3 playerPos) {
         float size = .3f;
         final int constDist = 10;
 
@@ -217,11 +217,11 @@ public class ClientMeasureBox extends MeasureBox {
             if (dist > constDist) size = dist * size / constDist;
         }
 
-        GizmoDrawing.text(text, pos, TextGizmo.Style.left(getColor()).scaled(size)).ignoreOcclusion();
+        Gizmos.billboardText(text, pos, TextGizmo.Style.forColorAndCentered(getColor()).withScale(size)).setAlwaysOnTop();
     }
 
     public boolean contains(BlockPos block) {
-        return BlockBox.create(blockStart, blockEnd).contains(block);
+        return BoundingBox.fromCorners(blockStart, blockEnd).isInside(block);
     }
 
     public enum MiningRestriction {
@@ -250,10 +250,10 @@ public class ClientMeasureBox extends MeasureBox {
     }
 
     private static class Line implements Comparable<Line> {
-        Box line;
+        AABB line;
         double distance;
 
-        Line(final Box line, final Vec3d pos) {
+        Line(final AABB line, final Vec3 pos) {
             this.line = line;
             this.distance = line.getCenter().distanceTo(pos);
         }

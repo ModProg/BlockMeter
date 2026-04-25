@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "win.baruna.blockmeter.mixin",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
   ],
   "client": [

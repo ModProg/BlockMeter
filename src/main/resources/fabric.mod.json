@@ -17,9 +17,9 @@
   },
   "mixins": ["blockmeter.mixins.json"],
   "depends": {
-    "fabricloader": "*",
-    "fabric": "*",
-    "minecraft": ">=1.21.10"
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": ">=26.1 <=26.1.2"
   },
   "recommends": {
     "modmenu": "*"

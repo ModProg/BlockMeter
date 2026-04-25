@@ -1,10 +1,10 @@
 package win.baruna.blockmeter.measurebox;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.item.DyeColor;
 
 public class MeasureBox {
 
@@ -29,7 +29,7 @@ public class MeasureBox {
     }
 
     public int getColor() {
-        return ColorHelper.fullAlpha(color.getSignColor());
+        return ARGB.opaque(color.getTextColor());
     }
 
     public boolean isFinished() {
@@ -54,11 +54,11 @@ public class MeasureBox {
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
-    protected MeasureBox(PacketByteBuf attachedData) {
+    protected MeasureBox(FriendlyByteBuf attachedData) {
         this.blockStart = attachedData.readBlockPos();
         this.blockEnd = attachedData.readBlockPos();
         this.dimension = attachedData.readIdentifier();
-        this.color = DyeColor.byIndex(attachedData.readInt());
+        this.color = DyeColor.byId(attachedData.readInt());
         this.finished = attachedData.readBoolean();
         this.mode = attachedData.readInt();
         this.orientation = attachedData.readInt();
@@ -73,11 +73,11 @@ public class MeasureBox {
      *
      * @param buf PacketByteBuf to fill
      */
-    public void writePacketBuf(PacketByteBuf buf) {
+    public void writePacketBuf(FriendlyByteBuf buf) {
         buf.writeBlockPos(this.blockStart);
         buf.writeBlockPos(this.blockEnd);
         buf.writeIdentifier(dimension);
-        buf.writeInt(color.getIndex());
+        buf.writeInt(color.getId());
         buf.writeBoolean(finished);
         buf.writeInt(mode);
         buf.writeInt(orientation);
@@ -89,7 +89,7 @@ public class MeasureBox {
      * @param attachedData a PacketByteBuf containing the ClientMeasureBox
      * @return the PacketByteBuf submitted
      */
-    public static MeasureBox fromPacketByteBuf(PacketByteBuf attachedData) {
+    public static MeasureBox fromPacketByteBuf(FriendlyByteBuf attachedData) {
         return new MeasureBox(attachedData);
     }
 }

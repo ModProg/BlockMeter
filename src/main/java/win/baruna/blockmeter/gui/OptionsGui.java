@@ -44,7 +44,7 @@ public class OptionsGui extends Screen {
                             final ClientMeasureBox currentBox = BlockMeterClient.getInstance().getCurrentBox();
                             if (currentBox != null)
                                 currentBox.setColor(DyeColor.byId(colorIndex));
-                            Minecraft.getInstance().setScreen(null);
+                            Minecraft.getInstance().gui.setScreen(null);
                         }));
             }
         }
@@ -53,7 +53,7 @@ public class OptionsGui extends Screen {
                 Component.translatable("blockmeter.keepColor", Component.translatable(config.incrementColor ? "options.off" :
                         "options.on")), button -> {
             config.incrementColor = !config.incrementColor;
-            Minecraft.getInstance().setScreen(null);
+            Minecraft.getInstance().gui.setScreen(null);
             // Todo find a way to increment to a new Color if a box was created while
             // incrementColor was disabled
             BlockMeterClient.getConfigManager().save();
@@ -66,7 +66,7 @@ public class OptionsGui extends Screen {
                 Component.translatable(config.innerDiagonal ? "options.on" : "options.off")), button -> {
             System.err.println("IDK WHAT YOU ARE DOING");
             config.innerDiagonal = !config.innerDiagonal;
-            Minecraft.getInstance().setScreen(null);
+            Minecraft.getInstance().gui.setScreen(null);
             BlockMeterClient.getConfigManager().save();
         })
                 .pos(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 32)
@@ -77,7 +77,7 @@ public class OptionsGui extends Screen {
                 Component.translatable(config.showOtherUsersBoxes ? "options.on" : "options.off")), button -> {
             System.err.println("IDK WHAT YOU ARE DOING");
             config.showOtherUsersBoxes = !config.showOtherUsersBoxes;
-            Minecraft.getInstance().setScreen(null);
+            Minecraft.getInstance().gui.setScreen(null);
             BlockMeterClient.getConfigManager().save();
         })
                 .pos(this.width / 2 - BUTTONWIDTH / 2, this.height / 2 + 54)

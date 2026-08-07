@@ -36,16 +36,16 @@ public class EditBoxGui extends Screen {
         addButton.accept(new Button.Builder(Component.translatable("blockmeter.moveCorner"),
                 button -> {
                     box.loosenCorner(block);
-                    Minecraft.getInstance().setScreen(null);
+                    Minecraft.getInstance().gui.setScreen(null);
                 }));
 
         addButton.accept(new Button.Builder(Component.translatable("blockmeter.restrictMining", Component.translatable(box.miningRestriction.translation)), button -> {
             box.miningRestriction = box.miningRestriction.next();
-            Minecraft.getInstance().setScreen(null);
+            Minecraft.getInstance().gui.setScreen(null);
         }));
 
         addButton.accept(new Button.Builder(Component.translatable("gui.cancel"),
-                button -> Minecraft.getInstance().setScreen(null)));
+                button -> Minecraft.getInstance().gui.setScreen(null)));
     }
 
     @Override

@@ -236,7 +236,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
             }
 
             if (keyBindingMenu.consumeClick() && active) {
-                Minecraft.getInstance().setScreen(this.quickMenu);
+                Minecraft.getInstance().gui.setScreen(this.quickMenu);
             }
 
             if (keyBindingMeasure.consumeClick()) {
@@ -317,7 +317,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
     public void editBox(ClientMeasureBox box, BlockPos block) {
         this.editBoxGui.setBox(box);
         this.editBoxGui.setBlock(block);
-        Minecraft.getInstance().setScreen(this.editBoxGui);
+        Minecraft.getInstance().gui.setScreen(this.editBoxGui);
     }
 
     /**
@@ -338,7 +338,7 @@ public class BlockMeterClient implements ClientModInitializer, InputUtils {
                     default:
                         this.selectBoxGui.setBoxes(boxes);
                         this.selectBoxGui.setBlock(block);
-                        Minecraft.getInstance().setScreen(this.selectBoxGui);
+                        Minecraft.getInstance().gui.setScreen(this.selectBoxGui);
                         break;
                 }
             } else {

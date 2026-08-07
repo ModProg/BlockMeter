@@ -39,13 +39,13 @@ public class SelectBoxGui extends Screen {
                     this.height / 2 - uiHeight / 2 + i * (BUTTONHEIGHT + PADDING), BUTTONWIDTH, BUTTONHEIGHT, text,
                     Color.ofOpaque(box.getColor()), false, true, button -> {
                 BlockMeterClient.getInstance().editBox(box, block);
-                Minecraft.getInstance().setScreen(null);
+                Minecraft.getInstance().gui.setScreen(null);
             }));
 
         }
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"),
-                button -> Minecraft.getInstance().setScreen(null))
+                button -> Minecraft.getInstance().gui.setScreen(null))
                 .pos(this.width / 2 - BUTTONWIDTH / 2,
                         this.height / 2 - uiHeight / 2 + boxes.length * (BUTTONHEIGHT + PADDING) + PADDING)
                 .size(BUTTONWIDTH, BUTTONHEIGHT)

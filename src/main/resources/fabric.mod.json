@@ -13,6 +13,10 @@
     "modmanager": {
       "curseforge": 369343,
       "modrinth": "oGU9LXKC"
+    },
+    "mc-publish": {
+      "curseforge": 369343,
+      "modrinth": "oGU9LXKC"
     }
   },
   "mixins": ["blockmeter.mixins.json"],
